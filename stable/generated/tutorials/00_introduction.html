@@ -232,7 +232,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.12.html">Version 1.12.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.11.html">Version 1.11.0</a></li>
@@ -321,7 +322,7 @@ detailed coverage of the low-level LSL API is provided in
 <section id="concepts">
 <h2>Concepts<a class="headerlink" href="#concepts" title="Link to this heading">🔗</a></h2>
 <p>In essence, a real-time LSL stream can be envisioned as a perpetual recording, akin to
-a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.io.Raw</span></code></a> instance, characterized by an indeterminate length and providing
+a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.io.Raw</span></code></a> instance, characterized by an indeterminate length and providing
 access solely to current and preceding samples. In memory, it can be depicted as a ring
 buffer, also known as a circular buffer, a data structure employing a single, unchanging
 buffer size, seemingly interconnected end-to-end.</p>
@@ -353,8 +354,8 @@ outdated data.</p>
 tutorial, it’s essential to generate simulated LSL streams. This involves creating a
 <a class="reference internal" href="../api/mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> and regularly sending data through it.</p>
 <p>Within MNE-LSL, the <a class="reference internal" href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> generates a simulated LSL stream
-utilizing data from a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.io.Raw</span></code></a> file or object. This stream inherits its
-description and channel specifications from the associated <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>. This
+utilizing data from a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.io.Raw</span></code></a> file or object. This stream inherits its
+description and channel specifications from the associated <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>. This
 information encompasses channel properties, channel locations, filters, digitization,
 and <a class="reference external" href="https://mne.tools/dev/documentation/implementation.html#signal-space-projection-ssp">SSP projectors</a>. The <a class="reference internal" href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> subsequently publishes
 data at regular intervals and seamlessly loops back to the starting point once the end
@@ -532,9 +533,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header general-df6184e7-c825-4226-b989-b886546814f8"
+<tr class="mne-repr-section-header general-f89daa6a-00ec-4cd3-8adf-83926a6d7b0b"
      title="Hide section"
-    onclick="toggleVisibility('general-df6184e7-c825-4226-b989-b886546814f8')">
+    onclick="toggleVisibility('general-f89daa6a-00ec-4cd3-8adf-83926a6d7b0b')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -546,26 +547,26 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element general-df6184e7-c825-4226-b989-b886546814f8 ">
+<tr class="repr-element general-f89daa6a-00ec-4cd3-8adf-83926a6d7b0b ">
     <td class="mne-repr-section-toggle"></td>
     <td>MNE object type</td>
     <td>Info</td>
 </tr>
-<tr class="repr-element general-df6184e7-c825-4226-b989-b886546814f8 ">
+<tr class="repr-element general-f89daa6a-00ec-4cd3-8adf-83926a6d7b0b ">
     <td class="mne-repr-section-toggle"></td>
     <td>Measurement date</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-df6184e7-c825-4226-b989-b886546814f8 ">
+<tr class="repr-element general-f89daa6a-00ec-4cd3-8adf-83926a6d7b0b ">
     <td class="mne-repr-section-toggle"></td>
     <td>Participant</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-df6184e7-c825-4226-b989-b886546814f8 ">
+<tr class="repr-element general-f89daa6a-00ec-4cd3-8adf-83926a6d7b0b ">
     <td class="mne-repr-section-toggle"></td>
     <td>Experimenter</td>
 
@@ -580,9 +581,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header acquisition-8be0475f-b95c-4979-911c-5ad1141179b4"
+<tr class="mne-repr-section-header acquisition-11da3d25-0448-4c17-b1d5-c009cd27557c"
      title="Hide section"
-    onclick="toggleVisibility('acquisition-8be0475f-b95c-4979-911c-5ad1141179b4')">
+    onclick="toggleVisibility('acquisition-11da3d25-0448-4c17-b1d5-c009cd27557c')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -601,7 +602,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element acquisition-8be0475f-b95c-4979-911c-5ad1141179b4 ">
+<tr class="repr-element acquisition-11da3d25-0448-4c17-b1d5-c009cd27557c ">
     <td class="mne-repr-section-toggle"></td>
     <td>Sampling frequency</td>
     <td>1024.00 Hz</td>
@@ -617,9 +618,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header channels-39e0a93d-eb47-4206-b1e6-34c91775f881"
+<tr class="mne-repr-section-header channels-0d69e101-0d3d-424d-b8c0-22fa193e602e"
      title="Hide section"
-    onclick="toggleVisibility('channels-39e0a93d-eb47-4206-b1e6-34c91775f881')">
+    onclick="toggleVisibility('channels-0d69e101-0d3d-424d-b8c0-22fa193e602e')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -632,7 +633,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element channels-39e0a93d-eb47-4206-b1e6-34c91775f881 ">
+<tr class="repr-element channels-0d69e101-0d3d-424d-b8c0-22fa193e602e ">
     <td class="mne-repr-section-toggle"></td>
     <td>EEG</td>
     <td>
@@ -645,7 +646,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-39e0a93d-eb47-4206-b1e6-34c91775f881 ">
+<tr class="repr-element channels-0d69e101-0d3d-424d-b8c0-22fa193e602e ">
     <td class="mne-repr-section-toggle"></td>
     <td>EOG</td>
     <td>
@@ -658,7 +659,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-39e0a93d-eb47-4206-b1e6-34c91775f881 ">
+<tr class="repr-element channels-0d69e101-0d3d-424d-b8c0-22fa193e602e ">
     <td class="mne-repr-section-toggle"></td>
     <td>ECG</td>
     <td>
@@ -671,7 +672,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-39e0a93d-eb47-4206-b1e6-34c91775f881 ">
+<tr class="repr-element channels-0d69e101-0d3d-424d-b8c0-22fa193e602e ">
     <td class="mne-repr-section-toggle"></td>
     <td>Stimulus</td>
     <td>
@@ -684,7 +685,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-39e0a93d-eb47-4206-b1e6-34c91775f881 ">
+<tr class="repr-element channels-0d69e101-0d3d-424d-b8c0-22fa193e602e ">
     <td class="mne-repr-section-toggle"></td>
     <td>Galvanic skin response</td>
     <td>
@@ -697,7 +698,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-39e0a93d-eb47-4206-b1e6-34c91775f881 ">
+<tr class="repr-element channels-0d69e101-0d3d-424d-b8c0-22fa193e602e ">
     <td class="mne-repr-section-toggle"></td>
     <td>Head & sensor digitization</td>
 
@@ -712,9 +713,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header filters-52081d15-2f1e-4fcc-902c-9108d516f5c1"
+<tr class="mne-repr-section-header filters-ac2e440d-2ce1-47e6-9f28-df2a08f79481"
      title="Hide section"
-    onclick="toggleVisibility('filters-52081d15-2f1e-4fcc-902c-9108d516f5c1')">
+    onclick="toggleVisibility('filters-ac2e440d-2ce1-47e6-9f28-df2a08f79481')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -726,14 +727,14 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element filters-52081d15-2f1e-4fcc-902c-9108d516f5c1 ">
+<tr class="repr-element filters-ac2e440d-2ce1-47e6-9f28-df2a08f79481 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Highpass</td>
     <td>0.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element filters-52081d15-2f1e-4fcc-902c-9108d516f5c1 ">
+<tr class="repr-element filters-ac2e440d-2ce1-47e6-9f28-df2a08f79481 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Lowpass</td>
     <td>512.00 Hz</td>
@@ -764,7 +765,7 @@ is used to reduce the number of push operations and improve stability.</p>
 </pre></div>
 </div>
 <p>A <a class="reference internal" href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> can also stream annotations attached to the
-<a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.io.Raw</span></code></a> object. Annotations are streamed on a second irregularly sampled
+<a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.io.Raw</span></code></a> object. Annotations are streamed on a second irregularly sampled
 <a class="reference internal" href="../api/mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>. See
 <a class="reference internal" href="20_player_annotations.html#tut-player-annotations"><span class="std std-ref">this separate tutorial</span></a> for additional information.</p>
 </section>
@@ -782,7 +783,7 @@ multiple LSL stream are present on the network, it’s crucial to uniquely ident
 a specific LSL stream using the <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">stype</span></code>, and <code class="docutils literal notranslate"><span class="pre">source_id</span></code> arguments
 of the <a class="reference internal" href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL" title="mne_lsl.stream.StreamLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamLSL</span></code></a> object.</p>
 </div>
-<p>The stream description is automatically parsed into an <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.Info</span></code></a> upon
+<p>The stream description is automatically parsed into an <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.Info</span></code></a> upon
 connection with the method <a class="reference internal" href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.connect" title="mne_lsl.stream.StreamLSL.connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mne_lsl.stream.StreamLSL.connect()</span></code></a>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL" title="mne_lsl.stream.StreamLSL" class="sphx-glr-backref-module-mne_lsl-stream sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">stream</span></a> <span class="o">=</span> <a href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL" title="mne_lsl.stream.StreamLSL" class="sphx-glr-backref-module-mne_lsl-stream sphx-glr-backref-type-py-class"><span class="n">Stream</span></a><span class="p">(</span><span class="n">bufsize</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">source_id</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">source_id</span></a><span class="p">)</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
 <a href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.info" title="mne_lsl.stream.StreamLSL.info" class="sphx-glr-backref-module-mne_lsl-stream sphx-glr-backref-type-py-property"><span class="n">stream</span><span class="o">.</span><span class="n">info</span></a>
@@ -936,9 +937,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header general-768d8054-e3ac-432e-a05b-e72609c3c118"
+<tr class="mne-repr-section-header general-0220d1ee-948e-4266-bbf7-7186568b7780"
      title="Hide section"
-    onclick="toggleVisibility('general-768d8054-e3ac-432e-a05b-e72609c3c118')">
+    onclick="toggleVisibility('general-0220d1ee-948e-4266-bbf7-7186568b7780')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -950,26 +951,26 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element general-768d8054-e3ac-432e-a05b-e72609c3c118 ">
+<tr class="repr-element general-0220d1ee-948e-4266-bbf7-7186568b7780 ">
     <td class="mne-repr-section-toggle"></td>
     <td>MNE object type</td>
     <td>Info</td>
 </tr>
-<tr class="repr-element general-768d8054-e3ac-432e-a05b-e72609c3c118 ">
+<tr class="repr-element general-0220d1ee-948e-4266-bbf7-7186568b7780 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Measurement date</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-768d8054-e3ac-432e-a05b-e72609c3c118 ">
+<tr class="repr-element general-0220d1ee-948e-4266-bbf7-7186568b7780 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Participant</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-768d8054-e3ac-432e-a05b-e72609c3c118 ">
+<tr class="repr-element general-0220d1ee-948e-4266-bbf7-7186568b7780 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Experimenter</td>
 
@@ -984,9 +985,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header acquisition-f53dbed6-b49a-4d21-80ce-dc175d092c31"
+<tr class="mne-repr-section-header acquisition-b87ce0ee-a091-43e1-ad96-6ffcbe04426f"
      title="Hide section"
-    onclick="toggleVisibility('acquisition-f53dbed6-b49a-4d21-80ce-dc175d092c31')">
+    onclick="toggleVisibility('acquisition-b87ce0ee-a091-43e1-ad96-6ffcbe04426f')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1005,7 +1006,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element acquisition-f53dbed6-b49a-4d21-80ce-dc175d092c31 ">
+<tr class="repr-element acquisition-b87ce0ee-a091-43e1-ad96-6ffcbe04426f ">
     <td class="mne-repr-section-toggle"></td>
     <td>Sampling frequency</td>
     <td>1024.00 Hz</td>
@@ -1021,9 +1022,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header channels-d27d3fbb-13fa-4c99-8060-1ce13b4c7996"
+<tr class="mne-repr-section-header channels-f43c709c-76fc-4738-b6b9-c3c1135ac019"
      title="Hide section"
-    onclick="toggleVisibility('channels-d27d3fbb-13fa-4c99-8060-1ce13b4c7996')">
+    onclick="toggleVisibility('channels-f43c709c-76fc-4738-b6b9-c3c1135ac019')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1036,7 +1037,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element channels-d27d3fbb-13fa-4c99-8060-1ce13b4c7996 ">
+<tr class="repr-element channels-f43c709c-76fc-4738-b6b9-c3c1135ac019 ">
     <td class="mne-repr-section-toggle"></td>
     <td>EEG</td>
     <td>
@@ -1049,7 +1050,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d27d3fbb-13fa-4c99-8060-1ce13b4c7996 ">
+<tr class="repr-element channels-f43c709c-76fc-4738-b6b9-c3c1135ac019 ">
     <td class="mne-repr-section-toggle"></td>
     <td>EOG</td>
     <td>
@@ -1062,7 +1063,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d27d3fbb-13fa-4c99-8060-1ce13b4c7996 ">
+<tr class="repr-element channels-f43c709c-76fc-4738-b6b9-c3c1135ac019 ">
     <td class="mne-repr-section-toggle"></td>
     <td>ECG</td>
     <td>
@@ -1075,7 +1076,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d27d3fbb-13fa-4c99-8060-1ce13b4c7996 ">
+<tr class="repr-element channels-f43c709c-76fc-4738-b6b9-c3c1135ac019 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Stimulus</td>
     <td>
@@ -1088,7 +1089,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d27d3fbb-13fa-4c99-8060-1ce13b4c7996 ">
+<tr class="repr-element channels-f43c709c-76fc-4738-b6b9-c3c1135ac019 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Galvanic skin response</td>
     <td>
@@ -1101,7 +1102,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d27d3fbb-13fa-4c99-8060-1ce13b4c7996 ">
+<tr class="repr-element channels-f43c709c-76fc-4738-b6b9-c3c1135ac019 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Head & sensor digitization</td>
 
@@ -1116,9 +1117,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header filters-878a2831-9e66-4560-9eb6-79c4b1efa497"
+<tr class="mne-repr-section-header filters-0f5bb282-1818-4af8-bc36-3007adf12187"
      title="Hide section"
-    onclick="toggleVisibility('filters-878a2831-9e66-4560-9eb6-79c4b1efa497')">
+    onclick="toggleVisibility('filters-0f5bb282-1818-4af8-bc36-3007adf12187')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1130,14 +1131,14 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element filters-878a2831-9e66-4560-9eb6-79c4b1efa497 ">
+<tr class="repr-element filters-0f5bb282-1818-4af8-bc36-3007adf12187 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Highpass</td>
     <td>0.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element filters-878a2831-9e66-4560-9eb6-79c4b1efa497 ">
+<tr class="repr-element filters-0f5bb282-1818-4af8-bc36-3007adf12187 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Lowpass</td>
     <td>512.00 Hz</td>
@@ -1148,7 +1149,7 @@ this file apply (plus whatever default styling the IDE applies).
 </div>
 <br />
 <br /><p>Interaction with a <a class="reference internal" href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL" title="mne_lsl.stream.StreamLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamLSL</span></code></a> is similar to the interaction
-with a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.io.Raw</span></code></a>. In this example, the stream is mocked from a 64 channels
+with a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.io.Raw</span></code></a>. In this example, the stream is mocked from a 64 channels
 EEG recording with an ANT Neuro amplifier. It includes 63 EEG, 2 EOG, 1 ECG, 1 EDA, 1
 STIM channel, and uses CPz as reference.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ch_types</span></a> <span class="o">=</span> <a href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.get_channel_types" title="mne_lsl.stream.StreamLSL.get_channel_types" class="sphx-glr-backref-module-mne_lsl-stream sphx-glr-backref-type-py-method"><span class="n">stream</span><span class="o">.</span><span class="n">get_channel_types</span></a><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1326,9 +1327,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header general-647cab70-2728-4651-9e1d-b78037c5e424"
+<tr class="mne-repr-section-header general-aa4e9211-33fa-4b93-ad89-116e5a20a6b1"
      title="Hide section"
-    onclick="toggleVisibility('general-647cab70-2728-4651-9e1d-b78037c5e424')">
+    onclick="toggleVisibility('general-aa4e9211-33fa-4b93-ad89-116e5a20a6b1')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1340,26 +1341,26 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element general-647cab70-2728-4651-9e1d-b78037c5e424 ">
+<tr class="repr-element general-aa4e9211-33fa-4b93-ad89-116e5a20a6b1 ">
     <td class="mne-repr-section-toggle"></td>
     <td>MNE object type</td>
     <td>Info</td>
 </tr>
-<tr class="repr-element general-647cab70-2728-4651-9e1d-b78037c5e424 ">
+<tr class="repr-element general-aa4e9211-33fa-4b93-ad89-116e5a20a6b1 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Measurement date</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-647cab70-2728-4651-9e1d-b78037c5e424 ">
+<tr class="repr-element general-aa4e9211-33fa-4b93-ad89-116e5a20a6b1 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Participant</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-647cab70-2728-4651-9e1d-b78037c5e424 ">
+<tr class="repr-element general-aa4e9211-33fa-4b93-ad89-116e5a20a6b1 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Experimenter</td>
 
@@ -1374,9 +1375,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header acquisition-2aa974b2-5a27-42b7-98e7-79109aabeb0b"
+<tr class="mne-repr-section-header acquisition-a8333eb3-4943-4734-84b8-f9272f475240"
      title="Hide section"
-    onclick="toggleVisibility('acquisition-2aa974b2-5a27-42b7-98e7-79109aabeb0b')">
+    onclick="toggleVisibility('acquisition-a8333eb3-4943-4734-84b8-f9272f475240')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1395,7 +1396,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element acquisition-2aa974b2-5a27-42b7-98e7-79109aabeb0b ">
+<tr class="repr-element acquisition-a8333eb3-4943-4734-84b8-f9272f475240 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Sampling frequency</td>
     <td>1024.00 Hz</td>
@@ -1411,9 +1412,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header channels-9a2e5552-4d9c-4c25-bbd1-d8ab70d25260"
+<tr class="mne-repr-section-header channels-b39f11d5-5808-4256-8c3d-b6df6ea2d9ac"
      title="Hide section"
-    onclick="toggleVisibility('channels-9a2e5552-4d9c-4c25-bbd1-d8ab70d25260')">
+    onclick="toggleVisibility('channels-b39f11d5-5808-4256-8c3d-b6df6ea2d9ac')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1426,7 +1427,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element channels-9a2e5552-4d9c-4c25-bbd1-d8ab70d25260 ">
+<tr class="repr-element channels-b39f11d5-5808-4256-8c3d-b6df6ea2d9ac ">
     <td class="mne-repr-section-toggle"></td>
     <td>EEG</td>
     <td>
@@ -1439,7 +1440,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-9a2e5552-4d9c-4c25-bbd1-d8ab70d25260 ">
+<tr class="repr-element channels-b39f11d5-5808-4256-8c3d-b6df6ea2d9ac ">
     <td class="mne-repr-section-toggle"></td>
     <td>Head & sensor digitization</td>
 
@@ -1454,9 +1455,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header filters-8a861ee6-e81b-4eb7-a436-afb9c38b0197"
+<tr class="mne-repr-section-header filters-78f0779a-b897-4448-8db1-035d565c6ad0"
      title="Hide section"
-    onclick="toggleVisibility('filters-8a861ee6-e81b-4eb7-a436-afb9c38b0197')">
+    onclick="toggleVisibility('filters-78f0779a-b897-4448-8db1-035d565c6ad0')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1468,14 +1469,14 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element filters-8a861ee6-e81b-4eb7-a436-afb9c38b0197 ">
+<tr class="repr-element filters-78f0779a-b897-4448-8db1-035d565c6ad0 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Highpass</td>
     <td>0.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element filters-8a861ee6-e81b-4eb7-a436-afb9c38b0197 ">
+<tr class="repr-element filters-78f0779a-b897-4448-8db1-035d565c6ad0 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Lowpass</td>
     <td>512.00 Hz</td>
@@ -1532,7 +1533,7 @@ to continuously mock an LSL stream or receive new data from an LSL stream.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.disconnect" title="mne_lsl.stream.StreamLSL.disconnect" class="sphx-glr-backref-module-mne_lsl-stream sphx-glr-backref-type-py-method"><span class="n">stream</span><span class="o">.</span><span class="n">disconnect</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Stream: OFF | MNE-LSL-Player (source: 45e3fe5fb43c43de8ccd6ec8a526aee4)&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Stream: OFF | MNE-LSL-Player (source: 7ae0f357debf4dbfbd38823371ef2896)&gt;
 </pre></div>
 </div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL.stop" title="mne_lsl.player.PlayerLSL.stop" class="sphx-glr-backref-module-mne_lsl-player sphx-glr-backref-type-py-method"><span class="n">player</span><span class="o">.</span><span class="n">stop</span></a><span class="p">()</span>
@@ -1541,7 +1542,7 @@ to continuously mock an LSL stream or receive new data from an LSL stream.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Player: MNE-LSL-Player | OFF | /home/runner/mne_data/MNE-LSL-data/sample/sample-ant-raw.fif&gt;
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 5.529 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 5.318 seconds)</p>
 <p><strong>Estimated memory usage:</strong>  296 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-generated-tutorials-00-introduction-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
@@ -1635,7 +1636,7 @@ to continuously mock an LSL stream or receive new data from an LSL stream.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2b23eb2b"></script>
+</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

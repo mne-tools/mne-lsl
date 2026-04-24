@@ -232,7 +232,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.12.html">Version 1.12.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.11.html">Version 1.11.0</a></li>
@@ -329,7 +330,7 @@ necessary. The differences between <code class="docutils literal notranslate"><s
 a <a class="reference internal" href="../api/mne_lsl.lsl.StreamInfo.html#mne_lsl.lsl.StreamInfo" title="mne_lsl.lsl.StreamInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamInfo</span></code></a> object, which specifies the stream’s name, type,
 source and properties. Convenience methods are available to set the channel
 properties, including <a class="reference internal" href="../api/mne_lsl.lsl.StreamInfo.html#mne_lsl.lsl.StreamInfo.set_channel_info" title="mne_lsl.lsl.StreamInfo.set_channel_info"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_channel_info()</span></code></a>, which uses a
-<a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.Info</span></code></a> object as source.</p>
+<a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.Info</span></code></a> object as source.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">sinfo</span> <span class="o">=</span> <a href="../api/mne_lsl.lsl.StreamInfo.html#mne_lsl.lsl.StreamInfo" title="mne_lsl.lsl.StreamInfo" class="sphx-glr-backref-module-mne_lsl-lsl sphx-glr-backref-type-py-class"><span class="n">StreamInfo</span></a><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;my-stream&quot;</span><span class="p">,</span>
     <span class="n">stype</span><span class="o">=</span><span class="s2">&quot;eeg&quot;</span><span class="p">,</span>
@@ -369,7 +370,7 @@ network. This operation is commonly named the stream resolution.</p>
   | Sampling: 1024.0 Hz
   | Number of channels: 3
   | Data type: &lt;class &#39;numpy.float32&#39;&gt;
-  | Source: a7c5e4c0bcc448b8a2412b766e5fb7d4
+  | Source: 303357db103e44858d4434f590701ff2
 </pre></div>
 </div>
 <p>The resolution retrieves only the stream basic properties. The channel properties,
@@ -408,10 +409,10 @@ both the properties and data become available.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&#39;microvolts&#39;, &#39;microvolts&#39;, &#39;microvolts&#39;]
 </pre></div>
 </div>
-<p>An <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.Info</span></code></a> can be obtained directly with
+<p>An <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">mne.Info</span></code></a> can be obtained directly with
 <a class="reference internal" href="../api/mne_lsl.lsl.StreamInfo.html#mne_lsl.lsl.StreamInfo.get_channel_info" title="mne_lsl.lsl.StreamInfo.get_channel_info"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_channel_info()</span></code></a>. If the information contained in the
 XML element tree can not be parsed, default values are used. For instance, the channel
-names are replaced by the channel numbers similarly to <a class="reference external" href="https://mne.tools/stable/generated/mne.create_info.html#mne.create_info" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.create_info()</span></code></a>.</p>
+names are replaced by the channel numbers similarly to <a class="reference external" href="https://mne.tools/stable/generated/mne.create_info.html#mne.create_info" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.create_info()</span></code></a>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">sinfo</span><span class="o">.</span><span class="n">get_channel_info</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -563,9 +564,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header general-221a17b5-3bd3-409d-af16-8ecc833e225e"
+<tr class="mne-repr-section-header general-31d6ba71-c376-4138-8766-e82a1fc2624f"
      title="Hide section"
-    onclick="toggleVisibility('general-221a17b5-3bd3-409d-af16-8ecc833e225e')">
+    onclick="toggleVisibility('general-31d6ba71-c376-4138-8766-e82a1fc2624f')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -577,26 +578,26 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element general-221a17b5-3bd3-409d-af16-8ecc833e225e ">
+<tr class="repr-element general-31d6ba71-c376-4138-8766-e82a1fc2624f ">
     <td class="mne-repr-section-toggle"></td>
     <td>MNE object type</td>
     <td>Info</td>
 </tr>
-<tr class="repr-element general-221a17b5-3bd3-409d-af16-8ecc833e225e ">
+<tr class="repr-element general-31d6ba71-c376-4138-8766-e82a1fc2624f ">
     <td class="mne-repr-section-toggle"></td>
     <td>Measurement date</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-221a17b5-3bd3-409d-af16-8ecc833e225e ">
+<tr class="repr-element general-31d6ba71-c376-4138-8766-e82a1fc2624f ">
     <td class="mne-repr-section-toggle"></td>
     <td>Participant</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-221a17b5-3bd3-409d-af16-8ecc833e225e ">
+<tr class="repr-element general-31d6ba71-c376-4138-8766-e82a1fc2624f ">
     <td class="mne-repr-section-toggle"></td>
     <td>Experimenter</td>
 
@@ -611,9 +612,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header acquisition-b961943f-040c-40b5-bc4e-58b2a12bd434"
+<tr class="mne-repr-section-header acquisition-3b1bd861-2cfb-466a-873e-ceb78826136e"
      title="Hide section"
-    onclick="toggleVisibility('acquisition-b961943f-040c-40b5-bc4e-58b2a12bd434')">
+    onclick="toggleVisibility('acquisition-3b1bd861-2cfb-466a-873e-ceb78826136e')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -632,7 +633,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element acquisition-b961943f-040c-40b5-bc4e-58b2a12bd434 ">
+<tr class="repr-element acquisition-3b1bd861-2cfb-466a-873e-ceb78826136e ">
     <td class="mne-repr-section-toggle"></td>
     <td>Sampling frequency</td>
     <td>1024.00 Hz</td>
@@ -648,9 +649,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header channels-39397222-dc24-4b5e-9bbc-71c9ca9eb82d"
+<tr class="mne-repr-section-header channels-fc1ab997-4629-4e87-89e7-c6862633aa4d"
      title="Hide section"
-    onclick="toggleVisibility('channels-39397222-dc24-4b5e-9bbc-71c9ca9eb82d')">
+    onclick="toggleVisibility('channels-fc1ab997-4629-4e87-89e7-c6862633aa4d')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -663,7 +664,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element channels-39397222-dc24-4b5e-9bbc-71c9ca9eb82d ">
+<tr class="repr-element channels-fc1ab997-4629-4e87-89e7-c6862633aa4d ">
     <td class="mne-repr-section-toggle"></td>
     <td>EEG</td>
     <td>
@@ -676,7 +677,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-39397222-dc24-4b5e-9bbc-71c9ca9eb82d ">
+<tr class="repr-element channels-fc1ab997-4629-4e87-89e7-c6862633aa4d ">
     <td class="mne-repr-section-toggle"></td>
     <td>Head & sensor digitization</td>
 
@@ -691,9 +692,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header filters-4cad78ff-8ec4-4f4d-8e92-800d38745f65"
+<tr class="mne-repr-section-header filters-4de1a7a1-7bc7-4f52-924b-f78e2d569c30"
      title="Hide section"
-    onclick="toggleVisibility('filters-4cad78ff-8ec4-4f4d-8e92-800d38745f65')">
+    onclick="toggleVisibility('filters-4de1a7a1-7bc7-4f52-924b-f78e2d569c30')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -705,14 +706,14 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element filters-4cad78ff-8ec4-4f4d-8e92-800d38745f65 ">
+<tr class="repr-element filters-4de1a7a1-7bc7-4f52-924b-f78e2d569c30 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Highpass</td>
     <td>0.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element filters-4cad78ff-8ec4-4f4d-8e92-800d38745f65 ">
+<tr class="repr-element filters-4de1a7a1-7bc7-4f52-924b-f78e2d569c30 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Lowpass</td>
     <td>512.00 Hz</td>
@@ -766,9 +767,9 @@ local timestamp can be compared with the LSL timestamp from acquired data.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Delta: </span><span class="si">{</span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">now</span></a><span class="w"> </span><span class="o">-</span><span class="w"> </span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ts</span></a><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Timestamp of the acquired data: 136.458598975
-Current time: 136.665057631
-Delta: 0.20645865599999524 seconds
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Timestamp of the acquired data: 319.132368802
+Current time: 319.319338286
+Delta: 0.18696948400003066 seconds
 </pre></div>
 </div>
 </section>
@@ -781,8 +782,8 @@ Delta: 0.20645865599999524 seconds
 <span class="k">del</span> <span class="n">outlet</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 3.376 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  204 MB</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 3.268 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  205 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-generated-tutorials-10-low-level-api-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/dda1526cefa85fd2bf81fe689772addb/10_low_level_API.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">10_low_level_API.ipynb</span></code></a></p>
@@ -877,7 +878,7 @@ Delta: 0.20645865599999524 seconds
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2b23eb2b"></script>
+</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

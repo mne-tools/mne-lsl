@@ -232,7 +232,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.12.html">Version 1.12.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.11.html">Version 1.11.0</a></li>
@@ -301,8 +302,8 @@
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>fname</strong><span class="classifier"><a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-path-like" title="(in MNE v1.11)"><span class="xref std std-term">path-like</span></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Raw</span></code></a></span></dt><dd><p>Path to the file to re-play as a mock real-time stream. MNE-Python must be able
-to load the file with <a class="reference external" href="https://mne.tools/stable/generated/mne.io.read_raw.html#mne.io.read_raw" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.io.read_raw()</span></code></a>. A <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object
+<dt><strong>fname</strong><span class="classifier"><a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-path-like" title="(in MNE v1.12)"><span class="xref std std-term">path-like</span></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Raw</span></code></a></span></dt><dd><p>Path to the file to re-play as a mock real-time stream. MNE-Python must be able
+to load the file with <a class="reference external" href="https://mne.tools/stable/generated/mne.io.read_raw.html#mne.io.read_raw" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.io.read_raw()</span></code></a>. A <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object
 can be provided directly.</p>
 </dd>
 <dt><strong>chunk_size</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> <code class="docutils literal notranslate"><span class="pre">≥</span> <span class="pre">1</span></code></span></dt><dd><p>Number of samples pushed at once on the <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>.</p>
@@ -318,11 +319,11 @@ from failure by finding a stream with the same <code class="docutils literal not
 By default, the source_id is set to <code class="docutils literal notranslate"><span class="pre">&quot;MNE-LSL&quot;</span></code>.</p>
 </dd>
 <dt><strong>annotations</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> is created for the
-<a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> of the <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object. If <code class="docutils literal notranslate"><span class="pre">False</span></code>,
-<a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> are ignored and the <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>
+<a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> of the <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object. If <code class="docutils literal notranslate"><span class="pre">False</span></code>,
+<a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> are ignored and the <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>
 is not created. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> is
-created only if the <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object has <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> to
-push. See notes for additional information on the <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a>
+created only if the <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object has <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> to
+push. See notes for additional information on the <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a>
 timestamps.</p>
 </dd>
 </dl>
@@ -416,12 +417,12 @@ a small discontinuity in the data stream.</p>
 <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>, the last sample of the chunk is attributed the
 current time (as returned by the function <a class="reference internal" href="mne_lsl.lsl.local_clock.html#mne_lsl.lsl.local_clock" title="mne_lsl.lsl.local_clock"><code class="xref py py-func docutils literal notranslate"><span class="pre">local_clock()</span></code></a>). Thus,
 the sample <code class="docutils literal notranslate"><span class="pre">chunk[0,</span> <span class="pre">:]</span></code> occurred in the  past and the sample <code class="docutils literal notranslate"><span class="pre">chunk[-1,</span> <span class="pre">:]</span></code>
-occurred “now”. If <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> are streamed, the annotations within
+occurred “now”. If <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> are streamed, the annotations within
 the chunk are pushed on the annotation <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>. The
-<a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> are pushed with a timestamp corrected for the annotation
-onset in regards to the chunk beginning. However, <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> push is
+<a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> are pushed with a timestamp corrected for the annotation
+onset in regards to the chunk beginning. However, <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> push is
 <em>not</em> delayed until the annotation timestamp or until the end of the chunk.
-Thus, an <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> can arrived at the client
+Thus, an <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> can arrived at the client
 <a class="reference internal" href="mne_lsl.lsl.StreamInlet.html#mne_lsl.lsl.StreamInlet" title="mne_lsl.lsl.StreamInlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamInlet</span></code></a> “ahead” of time, i.e. earlier than the current
 time (as returned by the function <a class="reference internal" href="mne_lsl.lsl.local_clock.html#mne_lsl.lsl.local_clock" title="mne_lsl.lsl.local_clock"><code class="xref py py-func docutils literal notranslate"><span class="pre">local_clock()</span></code></a>). Thus, it is
 recommended to connect to an annotation stream with the
@@ -440,13 +441,13 @@ every samples.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">ts</span> <span class="o">-</span> <span class="n">local_clock</span><span class="p">())</span>  <span class="c1"># positive values are annotations in the &quot;future&quot;</span>
 </pre></div>
 </div>
-<p>If <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> are streamed, the <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>
+<p>If <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> are streamed, the <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>
 name is <code class="docutils literal notranslate"><span class="pre">{name}-annotations</span></code> where <code class="docutils literal notranslate"><span class="pre">name</span></code> is the name of the
 <a class="reference internal" href="#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a>. The <code class="docutils literal notranslate"><span class="pre">dtype</span></code> is set to <code class="docutils literal notranslate"><span class="pre">np.float64</span></code> and each
-unique <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> description is encoded as a channel. The value
-streamed on a channel correspond to the duration of the <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a>.
+unique <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> description is encoded as a channel. The value
+streamed on a channel correspond to the duration of the <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a>.
 Thus, a sample on this <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> is a one-hot encoded
-vector of the <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> description/duration.</p>
+vector of the <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> description/duration.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>If the duration of an annotatation is <code class="docutils literal notranslate"><span class="pre">0</span></code>, then the one-hot encoded vector
@@ -546,7 +547,7 @@ channel indices. In lists, channel <em>type</em> strings (e.g., <code class="doc
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
 string values <code class="docutils literal notranslate"><span class="pre">'all'</span></code> to pick all channels, or <code class="docutils literal notranslate"><span class="pre">'data'</span></code> to pick 
-<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.11)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
+<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.12)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
 channels in <code class="docutils literal notranslate"><span class="pre">info['bads']</span></code> <em>will be included</em> if their names or indices 
 are explicitly provided.</p>
 </dd>
@@ -577,7 +578,7 @@ channel indices. In lists, channel <em>type</em> strings (e.g., <code class="doc
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
 string values <code class="docutils literal notranslate"><span class="pre">'all'</span></code> to pick all channels, or <code class="docutils literal notranslate"><span class="pre">'data'</span></code> to pick 
-<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.11)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
+<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.12)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
 channels in <code class="docutils literal notranslate"><span class="pre">info['bads']</span></code> <em>will be included</em> if their names or indices 
 are explicitly provided.</p>
 </dd>
@@ -604,7 +605,7 @@ for micro (corresponds to <code class="docutils literal notranslate"><span class
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>montage</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DigMontage</span></code></a></span></dt><dd><p>A copy of the channel positions, if available, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dt><strong>montage</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DigMontage</span></code></a></span></dt><dd><p>A copy of the channel positions, if available, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
 </dl>
 </dd>
@@ -638,7 +639,7 @@ names in the array are shown. Defaults to False.</p>
 </dd>
 <dt><strong>ch_groups</strong><span class="classifier">‘position’ | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_ch_groups, n_picks) | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channel groups for coloring the sensors. If None (default), default
 coloring scheme is used. If ‘position’, the sensors are divided
-into 8 regions. See <code class="docutils literal notranslate"><span class="pre">order</span></code> kwarg of <a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_raw.html#mne.viz.plot_raw" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.viz.plot_raw()</span></code></a>. If
+into 8 regions. See <code class="docutils literal notranslate"><span class="pre">order</span></code> kwarg of <a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_raw.html#mne.viz.plot_raw" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.viz.plot_raw()</span></code></a>. If
 array, the channels are divided by picks given in the array.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 0.13.0.</span></p>
@@ -651,7 +652,7 @@ the subject’s head. Has no effect when kind=’3d’. Defaults to True.</p>
 <p><span class="versionmodified added">Added in version 0.14.0.</span></p>
 </div>
 </dd>
-<dt><strong>axes</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.10.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes</span></code></a> | instance of <a class="reference external" href="https://matplotlib.org/stable/api/toolkits/mplot3d/axes3d.html#mpl_toolkits.mplot3d.axes3d.Axes3D" title="(in Matplotlib v3.10.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes3D</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Axes to draw the sensors to. If <code class="docutils literal notranslate"><span class="pre">kind='3d'</span></code>, axes must be an
+<dt><strong>axes</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.10.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes</span></code></a> | instance of <a class="reference external" href="https://matplotlib.org/stable/api/toolkits/mplot3d/axes3d.html#mpl_toolkits.mplot3d.axes3d.Axes3D" title="(in Matplotlib v3.10.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes3D</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Axes to draw the sensors to. If <code class="docutils literal notranslate"><span class="pre">kind='3d'</span></code>, axes must be an
 instance of Axes3D. If None (default), a new axes will be created.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 0.13.0.</span></p>
@@ -665,10 +666,10 @@ Defaults to False.</p>
 </dd>
 <dt><strong>show</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a></span></dt><dd><p>Show figure if True. Defaults to True.</p>
 </dd>
-<dt><strong>sphere</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.4)"><span>array_like</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | instance of <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>The sphere parameters to use for the head outline.
+<dt><strong>sphere</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.4)"><span>array_like</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | instance of <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>The sphere parameters to use for the head outline.
 Can be array-like of shape (4,) to give the X/Y/Z origin and radius in meters, or a
 single float to give just the radius (origin assumed 0, 0, 0).
-Can also be an instance of a spherical <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> to use the
+Can also be an instance of a spherical <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> to use the
 origin and radius from that object.
 Can also be a <code class="docutils literal notranslate"><span class="pre">str</span></code>, in which case:</p>
 <ul class="simple">
@@ -703,14 +704,14 @@ list of <code class="docutils literal notranslate"><span class="pre">str</span><
 </dd>
 <dt><strong>verbose</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Control verbosity of the logging output. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use the default
 verbosity level. See the <a class="reference external" href="https://docs.python.org/3/tutorial/stdlib2.html#tut-logging" title="(in Python v3.14)"><span class="xref std std-ref">logging documentation</span></a> and
-<a class="reference external" href="https://mne.tools/stable/generated/mne.verbose.html#mne.verbose" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.verbose()</span></code></a> for details. Should only be passed as a keyword
+<a class="reference external" href="https://mne.tools/stable/generated/mne.verbose.html#mne.verbose" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.verbose()</span></code></a> for details. Should only be passed as a keyword
 argument.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl>
-<dt><strong>fig</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.10.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code></a></span></dt><dd><p>Figure containing the sensor topography.</p>
+<dt><strong>fig</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.10.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code></a></span></dt><dd><p>Figure containing the sensor topography.</p>
 </dd>
 <dt><strong>selection</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a></span></dt><dd><p>A list of selected channels. Only returned if <code class="docutils literal notranslate"><span class="pre">kind=='select'</span></code>.</p>
 </dd>
@@ -720,13 +721,13 @@ argument.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_layout.html#mne.viz.plot_layout" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.viz.plot_layout</span></code></a></dt><dd></dd>
+<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_layout.html#mne.viz.plot_layout" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.viz.plot_layout</span></code></a></dt><dd></dd>
 </dl>
 </div>
 <p class="rubric">Notes</p>
 <p>This function plots the sensor locations from the info structure using
 matplotlib. For drawing the sensors using PyVista see
-<a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_alignment.html#mne.viz.plot_alignment" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.viz.plot_alignment()</span></code></a>.</p>
+<a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_alignment.html#mne.viz.plot_alignment" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.viz.plot_alignment()</span></code></a>.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 0.12.0.</span></p>
 </div>
@@ -810,7 +811,7 @@ stream from an MNE-compatible file, the data might need to be scale to match
 the unit of the system to mock. This function will both change the unit
 multiplication factor and rescale the associated data.</p>
 <p>The unit itself is defined by the sensor type. Change the channel type in the
-<code class="docutils literal notranslate"><span class="pre">raw</span></code> recording with <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_channel_types" title="(in MNE v1.11)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mne.io.Raw.set_channel_types()</span></code></a> before providing the
+<code class="docutils literal notranslate"><span class="pre">raw</span></code> recording with <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_channel_types" title="(in MNE v1.12)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mne.io.Raw.set_channel_types()</span></code></a> before providing the
 recording to the player.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -870,14 +871,14 @@ remove the time reference.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>montage</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DigMontage</span></code></a></span></dt><dd><p>A montage containing channel positions. If a string or
-<a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DigMontage</span></code></a> is
+<dt><strong>montage</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DigMontage</span></code></a></span></dt><dd><p>A montage containing channel positions. If a string or
+<a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DigMontage</span></code></a> is
 specified, the existing channel information will be updated with the
 channel positions from the montage. Valid strings are the names of the
 built-in montages that ship with MNE-Python; you can list those via
-<a class="reference external" href="https://mne.tools/stable/generated/mne.channels.get_builtin_montages.html#mne.channels.get_builtin_montages" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.channels.get_builtin_montages()</span></code></a>.
+<a class="reference external" href="https://mne.tools/stable/generated/mne.channels.get_builtin_montages.html#mne.channels.get_builtin_montages" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.channels.get_builtin_montages()</span></code></a>.
 If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the channel positions will be removed from the
-<a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>.</p>
+<a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>.</p>
 </dd>
 <dt><strong>match_case</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a></span></dt><dd><p>If True (default), channel name matching will be case sensitive.</p>
 <div class="versionadded">
@@ -901,14 +902,14 @@ warning, or <code class="docutils literal notranslate"><span class="pre">'ignore
 </dd>
 <dt><strong>verbose</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Control verbosity of the logging output. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use the default
 verbosity level. See the <a class="reference external" href="https://docs.python.org/3/tutorial/stdlib2.html#tut-logging" title="(in Python v3.14)"><span class="xref std std-ref">logging documentation</span></a> and
-<a class="reference external" href="https://mne.tools/stable/generated/mne.verbose.html#mne.verbose" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.verbose()</span></code></a> for details. Should only be passed as a keyword
+<a class="reference external" href="https://mne.tools/stable/generated/mne.verbose.html#mne.verbose" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.verbose()</span></code></a> for details. Should only be passed as a keyword
 argument.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl>
-<dt><strong>inst</strong><span class="classifier">instance of <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Raw</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.Epochs.html#mne.Epochs" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Epochs</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.Evoked.html#mne.Evoked" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Evoked</span></code></a></span></dt><dd><p>The instance, modified in-place.</p>
+<dt><strong>inst</strong><span class="classifier">instance of <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Raw</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.Epochs.html#mne.Epochs" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Epochs</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.Evoked.html#mne.Evoked" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Evoked</span></code></a></span></dt><dd><p>The instance, modified in-place.</p>
 </dd>
 </dl>
 </dd>
@@ -916,9 +917,9 @@ argument.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.make_standard_montage.html#mne.channels.make_standard_montage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.make_standard_montage</span></code></a></dt><dd></dd>
-<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.make_dig_montage.html#mne.channels.make_dig_montage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.make_dig_montage</span></code></a></dt><dd></dd>
-<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.read_custom_montage.html#mne.channels.read_custom_montage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.read_custom_montage</span></code></a></dt><dd></dd>
+<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.make_standard_montage.html#mne.channels.make_standard_montage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.make_standard_montage</span></code></a></dt><dd></dd>
+<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.make_dig_montage.html#mne.channels.make_dig_montage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.make_dig_montage</span></code></a></dt><dd></dd>
+<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.read_custom_montage.html#mne.channels.read_custom_montage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.read_custom_montage</span></code></a></dt><dd></dd>
 </dl>
 </div>
 <p class="rubric">Notes</p>
@@ -933,9 +934,9 @@ functions.</p>
 <p class="admonition-title">Warning</p>
 <p>Applying a montage will only set locations of channels that exist
 at the time it is applied. This means when
-<a class="reference external" href="https://mne.tools/stable/auto_tutorials/preprocessing/55_setting_eeg_reference.html#tut-set-eeg-ref" title="(in MNE v1.11)"><span class="xref std std-ref">re-referencing</span></a>
+<a class="reference external" href="https://mne.tools/stable/auto_tutorials/preprocessing/55_setting_eeg_reference.html#tut-set-eeg-ref" title="(in MNE v1.12)"><span class="xref std std-ref">re-referencing</span></a>
 make sure to apply the montage only after calling
-<a class="reference external" href="https://mne.tools/stable/generated/mne.add_reference_channels.html#mne.add_reference_channels" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.add_reference_channels()</span></code></a></p>
+<a class="reference external" href="https://mne.tools/stable/generated/mne.add_reference_channels.html#mne.add_reference_channels" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.add_reference_channels()</span></code></a></p>
 </div>
 </dd></dl>
 
@@ -973,7 +974,7 @@ make sure to apply the montage only after calling
 <dd><p>Annotations attached to the raw object, if streamed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1023,7 +1024,7 @@ make sure to apply the montage only after calling
 <dd><p>Info of the real-time stream.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1200,7 +1201,7 @@ make sure to apply the montage only after calling
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2b23eb2b"></script>
+</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -232,7 +232,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.12.html">Version 1.12.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.11.html">Version 1.11.0</a></li>
@@ -299,17 +300,17 @@ to download the full example code.</p>
 </div>
 <section class="sphx-glr-example-title" id="player-with-annotations">
 <span id="tut-player-annotations"></span><span id="sphx-glr-generated-tutorials-20-player-annotations-py"></span><h1>Player with annotations<a class="headerlink" href="#player-with-annotations" title="Link to this heading">🔗</a></h1>
-<p><a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> from a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object can be streamed as an event
+<p><a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> from a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object can be streamed as an event
 stream by <a class="reference internal" href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a>. The stream will be irregularly sampled,
 numerical, and of type <code class="docutils literal notranslate"><span class="pre">'annotations'</span></code>.</p>
-<p>A <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> contain 3 information:</p>
+<p>A <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a> contain 3 information:</p>
 <ul class="simple">
 <li><p>the onset of the annotation</p></li>
 <li><p>the duration of the annotation</p></li>
 <li><p>the description of the annotation</p></li>
 </ul>
 <p>To stream all 3 information, it’s duration-hod encoded along the channels. For instance,
-consider a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object with 3 different <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a>
+consider a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object with 3 different <a class="reference external" href="https://mne.tools/stable/generated/mne.Annotations.html#mne.Annotations" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotations</span></code></a>
 description: <code class="docutils literal notranslate"><span class="pre">'event1'</span></code>, <code class="docutils literal notranslate"><span class="pre">'event2'</span></code>, and <code class="docutils literal notranslate"><span class="pre">'event3'</span></code>. The event stream will have 3
 channels, each corresponding to one of the 3 descriptions. When an annotation is
 streamed, it’s duration is encoded as the value on its channel while the other channels
@@ -357,7 +358,7 @@ same time, then the chunk push is <code class="docutils literal notranslate"><sp
 (2, 3).</p>
 <section id="example-on-mock-signal">
 <h2>Example on mock signal<a class="headerlink" href="#example-on-mock-signal" title="Link to this heading">🔗</a></h2>
-<p>Let’s create a mock <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object with annotations and stream both the
+<p>Let’s create a mock <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object with annotations and stream both the
 signal and the annotations.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="numpy.zeros" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>  <span class="c1"># 1 channel, 1000 samples</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">:</span><span class="mi">200</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
@@ -371,13 +372,13 @@ signal and the annotations.</p>
 <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_20_player_annotations_001.png" srcset="../../_images/sphx_glr_20_player_annotations_001.png" alt="20 player annotations" class = "sphx-glr-single-img"/><p>Now that we have the <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object, we can stream it with a
+<img src="../../_images/sphx_glr_20_player_annotations_001.png" srcset="../../_images/sphx_glr_20_player_annotations_001.png" alt="20 player annotations" class = "sphx-glr-single-img"/><p>Now that we have the <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object, we can stream it with a
 <a class="reference internal" href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> object.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Note that forcing <code class="docutils literal notranslate"><span class="pre">annotations=True</span></code> is not necessary since the
 <a class="reference internal" href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> will automatically stream annotations if they
-are present in the <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object.</p>
+are present in the <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -548,9 +549,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header general-6d1d0df1-9537-4d59-889c-26c858172597"
+<tr class="mne-repr-section-header general-3f4e76d6-817e-4442-a493-6470d6a290ba"
      title="Hide section"
-    onclick="toggleVisibility('general-6d1d0df1-9537-4d59-889c-26c858172597')">
+    onclick="toggleVisibility('general-3f4e76d6-817e-4442-a493-6470d6a290ba')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -562,26 +563,26 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element general-6d1d0df1-9537-4d59-889c-26c858172597 ">
+<tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
     <td class="mne-repr-section-toggle"></td>
     <td>MNE object type</td>
     <td>Info</td>
 </tr>
-<tr class="repr-element general-6d1d0df1-9537-4d59-889c-26c858172597 ">
+<tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
     <td class="mne-repr-section-toggle"></td>
     <td>Measurement date</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-6d1d0df1-9537-4d59-889c-26c858172597 ">
+<tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
     <td class="mne-repr-section-toggle"></td>
     <td>Participant</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-6d1d0df1-9537-4d59-889c-26c858172597 ">
+<tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
     <td class="mne-repr-section-toggle"></td>
     <td>Experimenter</td>
 
@@ -596,9 +597,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header acquisition-854ea285-342d-4e40-8d59-e0aa74a8ecf7"
+<tr class="mne-repr-section-header acquisition-c6f8b377-fb41-47b2-8b08-b199e71164a3"
      title="Hide section"
-    onclick="toggleVisibility('acquisition-854ea285-342d-4e40-8d59-e0aa74a8ecf7')">
+    onclick="toggleVisibility('acquisition-c6f8b377-fb41-47b2-8b08-b199e71164a3')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -617,7 +618,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element acquisition-854ea285-342d-4e40-8d59-e0aa74a8ecf7 ">
+<tr class="repr-element acquisition-c6f8b377-fb41-47b2-8b08-b199e71164a3 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Sampling frequency</td>
     <td>1000.00 Hz</td>
@@ -633,9 +634,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header channels-67cb2285-1487-49f8-bfa5-8150e973facb"
+<tr class="mne-repr-section-header channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f"
      title="Hide section"
-    onclick="toggleVisibility('channels-67cb2285-1487-49f8-bfa5-8150e973facb')">
+    onclick="toggleVisibility('channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -648,7 +649,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element channels-67cb2285-1487-49f8-bfa5-8150e973facb ">
+<tr class="repr-element channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f ">
     <td class="mne-repr-section-toggle"></td>
     <td>misc</td>
     <td>
@@ -661,7 +662,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-67cb2285-1487-49f8-bfa5-8150e973facb ">
+<tr class="repr-element channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f ">
     <td class="mne-repr-section-toggle"></td>
     <td>Head & sensor digitization</td>
 
@@ -676,9 +677,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header filters-b7f715ad-58d6-4350-ab3e-5147ff7f0e7b"
+<tr class="mne-repr-section-header filters-1febe7c8-57e8-4006-8c77-4685e32369e8"
      title="Hide section"
-    onclick="toggleVisibility('filters-b7f715ad-58d6-4350-ab3e-5147ff7f0e7b')">
+    onclick="toggleVisibility('filters-1febe7c8-57e8-4006-8c77-4685e32369e8')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -690,14 +691,14 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element filters-b7f715ad-58d6-4350-ab3e-5147ff7f0e7b ">
+<tr class="repr-element filters-1febe7c8-57e8-4006-8c77-4685e32369e8 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Highpass</td>
     <td>0.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element filters-b7f715ad-58d6-4350-ab3e-5147ff7f0e7b ">
+<tr class="repr-element filters-1febe7c8-57e8-4006-8c77-4685e32369e8 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Lowpass</td>
     <td>500.00 Hz</td>
@@ -860,9 +861,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header general-769b3326-ffa2-4bf7-93bb-6d7316803ea2"
+<tr class="mne-repr-section-header general-556c55aa-d150-4e12-b77e-c3015c6618e6"
      title="Hide section"
-    onclick="toggleVisibility('general-769b3326-ffa2-4bf7-93bb-6d7316803ea2')">
+    onclick="toggleVisibility('general-556c55aa-d150-4e12-b77e-c3015c6618e6')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -874,26 +875,26 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element general-769b3326-ffa2-4bf7-93bb-6d7316803ea2 ">
+<tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
     <td class="mne-repr-section-toggle"></td>
     <td>MNE object type</td>
     <td>Info</td>
 </tr>
-<tr class="repr-element general-769b3326-ffa2-4bf7-93bb-6d7316803ea2 ">
+<tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Measurement date</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-769b3326-ffa2-4bf7-93bb-6d7316803ea2 ">
+<tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Participant</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-769b3326-ffa2-4bf7-93bb-6d7316803ea2 ">
+<tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Experimenter</td>
 
@@ -908,9 +909,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header acquisition-ca6ca665-2a57-49ae-bd82-276883e4b787"
+<tr class="mne-repr-section-header acquisition-3820504a-4fc6-4413-9cee-1b0d2e9daaf0"
      title="Hide section"
-    onclick="toggleVisibility('acquisition-ca6ca665-2a57-49ae-bd82-276883e4b787')">
+    onclick="toggleVisibility('acquisition-3820504a-4fc6-4413-9cee-1b0d2e9daaf0')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -929,7 +930,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element acquisition-ca6ca665-2a57-49ae-bd82-276883e4b787 ">
+<tr class="repr-element acquisition-3820504a-4fc6-4413-9cee-1b0d2e9daaf0 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Sampling frequency</td>
     <td>0.00 Hz</td>
@@ -945,9 +946,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header channels-1d02074f-a89a-45d0-b1cc-c19d56bd67e1"
+<tr class="mne-repr-section-header channels-fe61deab-1d62-4882-947d-3aa992e348a0"
      title="Hide section"
-    onclick="toggleVisibility('channels-1d02074f-a89a-45d0-b1cc-c19d56bd67e1')">
+    onclick="toggleVisibility('channels-fe61deab-1d62-4882-947d-3aa992e348a0')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -960,7 +961,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element channels-1d02074f-a89a-45d0-b1cc-c19d56bd67e1 ">
+<tr class="repr-element channels-fe61deab-1d62-4882-947d-3aa992e348a0 ">
     <td class="mne-repr-section-toggle"></td>
     <td>misc</td>
     <td>
@@ -973,7 +974,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-1d02074f-a89a-45d0-b1cc-c19d56bd67e1 ">
+<tr class="repr-element channels-fe61deab-1d62-4882-947d-3aa992e348a0 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Head & sensor digitization</td>
 
@@ -988,9 +989,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header filters-980d2918-9231-41a2-bf43-1951391182f9"
+<tr class="mne-repr-section-header filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7"
      title="Hide section"
-    onclick="toggleVisibility('filters-980d2918-9231-41a2-bf43-1951391182f9')">
+    onclick="toggleVisibility('filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1002,14 +1003,14 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element filters-980d2918-9231-41a2-bf43-1951391182f9 ">
+<tr class="repr-element filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Highpass</td>
     <td>0.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element filters-980d2918-9231-41a2-bf43-1951391182f9 ">
+<tr class="repr-element filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Lowpass</td>
     <td>0.00 Hz</td>
@@ -1070,13 +1071,13 @@ receive new data from an LSL stream.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.disconnect" title="mne_lsl.stream.StreamLSL.disconnect" class="sphx-glr-backref-module-mne_lsl-stream sphx-glr-backref-type-py-method"><span class="n">stream</span><span class="o">.</span><span class="n">disconnect</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Stream: OFF | tutorial-annots (source: b2d4695ed2cd44caa2b94316d143b436)&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Stream: OFF | tutorial-annots (source: 9c2ee072cc634f78b0abc8490be7b98b)&gt;
 </pre></div>
 </div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.disconnect" title="mne_lsl.stream.StreamLSL.disconnect" class="sphx-glr-backref-module-mne_lsl-stream sphx-glr-backref-type-py-method"><span class="n">stream_annotations</span><span class="o">.</span><span class="n">disconnect</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Stream: OFF | tutorial-annots-annotations (source: b2d4695ed2cd44caa2b94316d143b436)&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Stream: OFF | tutorial-annots-annotations (source: 9c2ee072cc634f78b0abc8490be7b98b)&gt;
 </pre></div>
 </div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL.stop" title="mne_lsl.player.PlayerLSL.stop" class="sphx-glr-backref-module-mne_lsl-player sphx-glr-backref-type-py-method"><span class="n">player</span><span class="o">.</span><span class="n">stop</span></a><span class="p">()</span>
@@ -1085,8 +1086,8 @@ receive new data from an LSL stream.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Player: tutorial-annots | OFF&gt;
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 10.164 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  198 MB</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.675 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  199 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-generated-tutorials-20-player-annotations-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/aedac67eb19b0ba2e7b95e904254cc0b/20_player_annotations.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">20_player_annotations.ipynb</span></code></a></p>
@@ -1177,7 +1178,7 @@ receive new data from an LSL stream.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2b23eb2b"></script>
+</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

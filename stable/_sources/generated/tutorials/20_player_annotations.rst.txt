@@ -343,9 +343,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header general-6d1d0df1-9537-4d59-889c-26c858172597"
+    <tr class="mne-repr-section-header general-3f4e76d6-817e-4442-a493-6470d6a290ba"
          title="Hide section" 
-        onclick="toggleVisibility('general-6d1d0df1-9537-4d59-889c-26c858172597')">
+        onclick="toggleVisibility('general-3f4e76d6-817e-4442-a493-6470d6a290ba')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -357,26 +357,26 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element general-6d1d0df1-9537-4d59-889c-26c858172597 ">
+    <tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-6d1d0df1-9537-4d59-889c-26c858172597 ">
+    <tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-6d1d0df1-9537-4d59-889c-26c858172597 ">
+    <tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-6d1d0df1-9537-4d59-889c-26c858172597 ">
+    <tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -391,9 +391,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header acquisition-854ea285-342d-4e40-8d59-e0aa74a8ecf7"
+    <tr class="mne-repr-section-header acquisition-c6f8b377-fb41-47b2-8b08-b199e71164a3"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-854ea285-342d-4e40-8d59-e0aa74a8ecf7')">
+        onclick="toggleVisibility('acquisition-c6f8b377-fb41-47b2-8b08-b199e71164a3')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -412,7 +412,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="repr-element acquisition-854ea285-342d-4e40-8d59-e0aa74a8ecf7 ">
+    <tr class="repr-element acquisition-c6f8b377-fb41-47b2-8b08-b199e71164a3 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>1000.00 Hz</td>
@@ -428,9 +428,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header channels-67cb2285-1487-49f8-bfa5-8150e973facb"
+    <tr class="mne-repr-section-header channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f"
          title="Hide section" 
-        onclick="toggleVisibility('channels-67cb2285-1487-49f8-bfa5-8150e973facb')">
+        onclick="toggleVisibility('channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -443,7 +443,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
     
-    <tr class="repr-element channels-67cb2285-1487-49f8-bfa5-8150e973facb ">
+    <tr class="repr-element channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f ">
         <td class="mne-repr-section-toggle"></td>
         <td>misc</td>
         <td>
@@ -456,7 +456,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element channels-67cb2285-1487-49f8-bfa5-8150e973facb ">
+    <tr class="repr-element channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -471,9 +471,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header filters-b7f715ad-58d6-4350-ab3e-5147ff7f0e7b"
+    <tr class="mne-repr-section-header filters-1febe7c8-57e8-4006-8c77-4685e32369e8"
          title="Hide section" 
-        onclick="toggleVisibility('filters-b7f715ad-58d6-4350-ab3e-5147ff7f0e7b')">
+        onclick="toggleVisibility('filters-1febe7c8-57e8-4006-8c77-4685e32369e8')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -485,14 +485,14 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element filters-b7f715ad-58d6-4350-ab3e-5147ff7f0e7b ">
+    <tr class="repr-element filters-1febe7c8-57e8-4006-8c77-4685e32369e8 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-b7f715ad-58d6-4350-ab3e-5147ff7f0e7b ">
+    <tr class="repr-element filters-1febe7c8-57e8-4006-8c77-4685e32369e8 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>500.00 Hz</td>
@@ -668,9 +668,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header general-769b3326-ffa2-4bf7-93bb-6d7316803ea2"
+    <tr class="mne-repr-section-header general-556c55aa-d150-4e12-b77e-c3015c6618e6"
          title="Hide section" 
-        onclick="toggleVisibility('general-769b3326-ffa2-4bf7-93bb-6d7316803ea2')">
+        onclick="toggleVisibility('general-556c55aa-d150-4e12-b77e-c3015c6618e6')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -682,26 +682,26 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element general-769b3326-ffa2-4bf7-93bb-6d7316803ea2 ">
+    <tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-769b3326-ffa2-4bf7-93bb-6d7316803ea2 ">
+    <tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-769b3326-ffa2-4bf7-93bb-6d7316803ea2 ">
+    <tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-769b3326-ffa2-4bf7-93bb-6d7316803ea2 ">
+    <tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -716,9 +716,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header acquisition-ca6ca665-2a57-49ae-bd82-276883e4b787"
+    <tr class="mne-repr-section-header acquisition-3820504a-4fc6-4413-9cee-1b0d2e9daaf0"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-ca6ca665-2a57-49ae-bd82-276883e4b787')">
+        onclick="toggleVisibility('acquisition-3820504a-4fc6-4413-9cee-1b0d2e9daaf0')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -737,7 +737,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="repr-element acquisition-ca6ca665-2a57-49ae-bd82-276883e4b787 ">
+    <tr class="repr-element acquisition-3820504a-4fc6-4413-9cee-1b0d2e9daaf0 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>0.00 Hz</td>
@@ -753,9 +753,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header channels-1d02074f-a89a-45d0-b1cc-c19d56bd67e1"
+    <tr class="mne-repr-section-header channels-fe61deab-1d62-4882-947d-3aa992e348a0"
          title="Hide section" 
-        onclick="toggleVisibility('channels-1d02074f-a89a-45d0-b1cc-c19d56bd67e1')">
+        onclick="toggleVisibility('channels-fe61deab-1d62-4882-947d-3aa992e348a0')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -768,7 +768,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
     
-    <tr class="repr-element channels-1d02074f-a89a-45d0-b1cc-c19d56bd67e1 ">
+    <tr class="repr-element channels-fe61deab-1d62-4882-947d-3aa992e348a0 ">
         <td class="mne-repr-section-toggle"></td>
         <td>misc</td>
         <td>
@@ -781,7 +781,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element channels-1d02074f-a89a-45d0-b1cc-c19d56bd67e1 ">
+    <tr class="repr-element channels-fe61deab-1d62-4882-947d-3aa992e348a0 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -796,9 +796,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header filters-980d2918-9231-41a2-bf43-1951391182f9"
+    <tr class="mne-repr-section-header filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7"
          title="Hide section" 
-        onclick="toggleVisibility('filters-980d2918-9231-41a2-bf43-1951391182f9')">
+        onclick="toggleVisibility('filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -810,14 +810,14 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element filters-980d2918-9231-41a2-bf43-1951391182f9 ">
+    <tr class="repr-element filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-980d2918-9231-41a2-bf43-1951391182f9 ">
+    <tr class="repr-element filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>0.00 Hz</td>
@@ -915,7 +915,7 @@ receive new data from an LSL stream.
  .. code-block:: none
 
 
-    <Stream: OFF | tutorial-annots (source: b2d4695ed2cd44caa2b94316d143b436)>
+    <Stream: OFF | tutorial-annots (source: 9c2ee072cc634f78b0abc8490be7b98b)>
 
 
 
@@ -935,7 +935,7 @@ receive new data from an LSL stream.
  .. code-block:: none
 
 
-    <Stream: OFF | tutorial-annots-annotations (source: b2d4695ed2cd44caa2b94316d143b436)>
+    <Stream: OFF | tutorial-annots-annotations (source: 9c2ee072cc634f78b0abc8490be7b98b)>
 
 
 
@@ -961,9 +961,9 @@ receive new data from an LSL stream.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 10.164 seconds)
+   **Total running time of the script:** (0 minutes 9.675 seconds)
 
-**Estimated memory usage:**  198 MB
+**Estimated memory usage:**  199 MB
 
 
 .. _sphx_glr_download_generated_tutorials_20_player_annotations.py:

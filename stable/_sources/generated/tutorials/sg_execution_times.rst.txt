@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**01:23.410** total execution time for 5 files **from generated/tutorials**:
+**01:22.856** total execution time for 5 files **from generated/tutorials**:
 
 .. container::
 
@@ -33,17 +33,17 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_generated_tutorials_40_epochs.py` (``40_epochs.py``)
-     - 00:51.733
-     - 728.3
+     - 00:51.992
+     - 731.2
    * - :ref:`sphx_glr_generated_tutorials_30_stream_manual.py` (``30_stream_manual.py``)
-     - 00:12.609
-     - 283.7
+     - 00:12.603
+     - 286.0
    * - :ref:`sphx_glr_generated_tutorials_20_player_annotations.py` (``20_player_annotations.py``)
-     - 00:10.164
-     - 198.4
+     - 00:09.675
+     - 199.2
    * - :ref:`sphx_glr_generated_tutorials_00_introduction.py` (``00_introduction.py``)
-     - 00:05.529
-     - 296.1
+     - 00:05.318
+     - 295.7
    * - :ref:`sphx_glr_generated_tutorials_10_low_level_API.py` (``10_low_level_API.py``)
-     - 00:03.376
-     - 203.8
+     - 00:03.268
+     - 204.5

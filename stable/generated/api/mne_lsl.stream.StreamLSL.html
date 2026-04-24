@@ -232,7 +232,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.12.html">Version 1.12.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.11.html">Version 1.11.0</a></li>
@@ -814,13 +815,13 @@ channel indices. In lists, channel <em>type</em> strings (e.g., <code class="doc
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
 string values <code class="docutils literal notranslate"><span class="pre">'all'</span></code> to pick all channels, or <code class="docutils literal notranslate"><span class="pre">'data'</span></code> to pick 
-<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.11)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
+<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.12)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
 channels in <code class="docutils literal notranslate"><span class="pre">info['bads']</span></code> <em>will be included</em> if their names or indices 
 are explicitly provided.</p>
 </dd>
 <dt><strong>iir_params</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">dict</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Dictionary of parameters to use for IIR filtering. If None, a 4th order
 Butterworth will be used. For more information, see
-<a class="reference external" href="https://mne.tools/stable/generated/mne.filter.construct_iir_filter.html#mne.filter.construct_iir_filter" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.filter.construct_iir_filter()</span></code></a>.</p>
+<a class="reference external" href="https://mne.tools/stable/generated/mne.filter.construct_iir_filter.html#mne.filter.construct_iir_filter" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.filter.construct_iir_filter()</span></code></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The output <code class="docutils literal notranslate"><span class="pre">sos</span></code> must be used. The <code class="docutils literal notranslate"><span class="pre">ba</span></code> output is not supported.</p>
@@ -858,7 +859,7 @@ channel indices. In lists, channel <em>type</em> strings (e.g., <code class="doc
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
 string values <code class="docutils literal notranslate"><span class="pre">'all'</span></code> to pick all channels, or <code class="docutils literal notranslate"><span class="pre">'data'</span></code> to pick 
-<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.11)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
+<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.12)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
 channels in <code class="docutils literal notranslate"><span class="pre">info['bads']</span></code> <em>will be included</em> if their names or indices 
 are explicitly provided.</p>
 </dd>
@@ -889,7 +890,7 @@ channel indices. In lists, channel <em>type</em> strings (e.g., <code class="doc
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
 string values <code class="docutils literal notranslate"><span class="pre">'all'</span></code> to pick all channels, or <code class="docutils literal notranslate"><span class="pre">'data'</span></code> to pick 
-<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.11)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
+<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.12)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
 channels in <code class="docutils literal notranslate"><span class="pre">info['bads']</span></code> <em>will be included</em> if their names or indices 
 are explicitly provided.</p>
 </dd>
@@ -928,7 +929,7 @@ channel indices. In lists, channel <em>type</em> strings (e.g., <code class="doc
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
 string values <code class="docutils literal notranslate"><span class="pre">'all'</span></code> to pick all channels, or <code class="docutils literal notranslate"><span class="pre">'data'</span></code> to pick 
-<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.11)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
+<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.12)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
 channels in <code class="docutils literal notranslate"><span class="pre">info['bads']</span></code> <em>will be included</em> if their names or indices 
 are explicitly provided.</p>
 </dd>
@@ -959,7 +960,7 @@ argument <code class="docutils literal notranslate"><span class="pre">picks</spa
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>montage</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DigMontage</span></code></a></span></dt><dd><p>A copy of the channel positions, if available, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dt><strong>montage</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DigMontage</span></code></a></span></dt><dd><p>A copy of the channel positions, if available, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
 </dl>
 </dd>
@@ -988,7 +989,7 @@ channel indices. In lists, channel <em>type</em> strings (e.g., <code class="doc
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
 string values <code class="docutils literal notranslate"><span class="pre">'all'</span></code> to pick all channels, or <code class="docutils literal notranslate"><span class="pre">'data'</span></code> to pick 
-<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.11)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
+<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.12)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels. Note that 
 channels in <code class="docutils literal notranslate"><span class="pre">info['bads']</span></code> <em>will be included</em> if their names or indices 
 are explicitly provided.</p>
 </dd>
@@ -998,7 +999,7 @@ are explicitly provided.</p>
 </dd>
 <dt><strong>iir_params</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">dict</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Dictionary of parameters to use for IIR filtering. If None, a 4th order
 Butterworth will be used. For more information, see
-<a class="reference external" href="https://mne.tools/stable/generated/mne.filter.construct_iir_filter.html#mne.filter.construct_iir_filter" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.filter.construct_iir_filter()</span></code></a>.</p>
+<a class="reference external" href="https://mne.tools/stable/generated/mne.filter.construct_iir_filter.html#mne.filter.construct_iir_filter" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.filter.construct_iir_filter()</span></code></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The output <code class="docutils literal notranslate"><span class="pre">sos</span></code> must be used. The <code class="docutils literal notranslate"><span class="pre">ba</span></code> output is not supported.</p>
@@ -1036,7 +1037,7 @@ channel indices. In lists, channel <em>type</em> strings (e.g., <code class="doc
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
 string values <code class="docutils literal notranslate"><span class="pre">'all'</span></code> to pick all channels, or <code class="docutils literal notranslate"><span class="pre">'data'</span></code> to pick 
-<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.11)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels.</p>
+<a class="reference external" href="https://mne.tools/stable/documentation/glossary.html#term-data-channels" title="(in MNE v1.12)"><span class="xref std std-term">data channels</span></a>. None (default) will pick all channels.</p>
 </dd>
 <dt><strong>exclude</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Set of channels to exclude, only used when picking is based on types, e.g.
 <code class="docutils literal notranslate"><span class="pre">exclude='bads'</span></code> when <code class="docutils literal notranslate"><span class="pre">picks=&quot;meg&quot;</span></code>.</p>
@@ -1095,7 +1096,7 @@ names in the array are shown. Defaults to False.</p>
 </dd>
 <dt><strong>ch_groups</strong><span class="classifier">‘position’ | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_ch_groups, n_picks) | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channel groups for coloring the sensors. If None (default), default
 coloring scheme is used. If ‘position’, the sensors are divided
-into 8 regions. See <code class="docutils literal notranslate"><span class="pre">order</span></code> kwarg of <a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_raw.html#mne.viz.plot_raw" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.viz.plot_raw()</span></code></a>. If
+into 8 regions. See <code class="docutils literal notranslate"><span class="pre">order</span></code> kwarg of <a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_raw.html#mne.viz.plot_raw" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.viz.plot_raw()</span></code></a>. If
 array, the channels are divided by picks given in the array.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 0.13.0.</span></p>
@@ -1108,7 +1109,7 @@ the subject’s head. Has no effect when kind=’3d’. Defaults to True.</p>
 <p><span class="versionmodified added">Added in version 0.14.0.</span></p>
 </div>
 </dd>
-<dt><strong>axes</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.10.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes</span></code></a> | instance of <a class="reference external" href="https://matplotlib.org/stable/api/toolkits/mplot3d/axes3d.html#mpl_toolkits.mplot3d.axes3d.Axes3D" title="(in Matplotlib v3.10.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes3D</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Axes to draw the sensors to. If <code class="docutils literal notranslate"><span class="pre">kind='3d'</span></code>, axes must be an
+<dt><strong>axes</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.10.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes</span></code></a> | instance of <a class="reference external" href="https://matplotlib.org/stable/api/toolkits/mplot3d/axes3d.html#mpl_toolkits.mplot3d.axes3d.Axes3D" title="(in Matplotlib v3.10.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes3D</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Axes to draw the sensors to. If <code class="docutils literal notranslate"><span class="pre">kind='3d'</span></code>, axes must be an
 instance of Axes3D. If None (default), a new axes will be created.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 0.13.0.</span></p>
@@ -1122,10 +1123,10 @@ Defaults to False.</p>
 </dd>
 <dt><strong>show</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a></span></dt><dd><p>Show figure if True. Defaults to True.</p>
 </dd>
-<dt><strong>sphere</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.4)"><span>array_like</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | instance of <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>The sphere parameters to use for the head outline.
+<dt><strong>sphere</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.4)"><span>array_like</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | instance of <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>The sphere parameters to use for the head outline.
 Can be array-like of shape (4,) to give the X/Y/Z origin and radius in meters, or a
 single float to give just the radius (origin assumed 0, 0, 0).
-Can also be an instance of a spherical <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> to use the
+Can also be an instance of a spherical <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> to use the
 origin and radius from that object.
 Can also be a <code class="docutils literal notranslate"><span class="pre">str</span></code>, in which case:</p>
 <ul class="simple">
@@ -1160,14 +1161,14 @@ list of <code class="docutils literal notranslate"><span class="pre">str</span><
 </dd>
 <dt><strong>verbose</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Control verbosity of the logging output. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use the default
 verbosity level. See the <a class="reference external" href="https://docs.python.org/3/tutorial/stdlib2.html#tut-logging" title="(in Python v3.14)"><span class="xref std std-ref">logging documentation</span></a> and
-<a class="reference external" href="https://mne.tools/stable/generated/mne.verbose.html#mne.verbose" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.verbose()</span></code></a> for details. Should only be passed as a keyword
+<a class="reference external" href="https://mne.tools/stable/generated/mne.verbose.html#mne.verbose" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.verbose()</span></code></a> for details. Should only be passed as a keyword
 argument.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl>
-<dt><strong>fig</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.10.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code></a></span></dt><dd><p>Figure containing the sensor topography.</p>
+<dt><strong>fig</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.10.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code></a></span></dt><dd><p>Figure containing the sensor topography.</p>
 </dd>
 <dt><strong>selection</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a></span></dt><dd><p>A list of selected channels. Only returned if <code class="docutils literal notranslate"><span class="pre">kind=='select'</span></code>.</p>
 </dd>
@@ -1177,13 +1178,13 @@ argument.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_layout.html#mne.viz.plot_layout" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.viz.plot_layout</span></code></a></dt><dd></dd>
+<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_layout.html#mne.viz.plot_layout" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.viz.plot_layout</span></code></a></dt><dd></dd>
 </dl>
 </div>
 <p class="rubric">Notes</p>
 <p>This function plots the sensor locations from the info structure using
 matplotlib. For drawing the sensors using PyVista see
-<a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_alignment.html#mne.viz.plot_alignment" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.viz.plot_alignment()</span></code></a>.</p>
+<a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_alignment.html#mne.viz.plot_alignment" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.viz.plot_alignment()</span></code></a>.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 0.12.0.</span></p>
 </div>
@@ -1374,14 +1375,14 @@ the time reference.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>montage</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DigMontage</span></code></a></span></dt><dd><p>A montage containing channel positions. If a string or
-<a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DigMontage</span></code></a> is
+<dt><strong>montage</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DigMontage</span></code></a></span></dt><dd><p>A montage containing channel positions. If a string or
+<a class="reference external" href="https://mne.tools/stable/generated/mne.channels.DigMontage.html#mne.channels.DigMontage" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DigMontage</span></code></a> is
 specified, the existing channel information will be updated with the
 channel positions from the montage. Valid strings are the names of the
 built-in montages that ship with MNE-Python; you can list those via
-<a class="reference external" href="https://mne.tools/stable/generated/mne.channels.get_builtin_montages.html#mne.channels.get_builtin_montages" title="(in MNE v1.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.channels.get_builtin_montages()</span></code></a>.
+<a class="reference external" href="https://mne.tools/stable/generated/mne.channels.get_builtin_montages.html#mne.channels.get_builtin_montages" title="(in MNE v1.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.channels.get_builtin_montages()</span></code></a>.
 If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the channel positions will be removed from the
-<a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>.</p>
+<a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>.</p>
 </dd>
 <dt><strong>match_case</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a></span></dt><dd><p>If True (default), channel name matching will be case sensitive.</p>
 <div class="versionadded">
@@ -1421,9 +1422,9 @@ to <code class="docutils literal notranslate"><span class="pre">&quot;INFO&quot;
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.make_standard_montage.html#mne.channels.make_standard_montage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.make_standard_montage</span></code></a></dt><dd></dd>
-<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.make_dig_montage.html#mne.channels.make_dig_montage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.make_dig_montage</span></code></a></dt><dd></dd>
-<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.read_custom_montage.html#mne.channels.read_custom_montage" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.read_custom_montage</span></code></a></dt><dd></dd>
+<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.make_standard_montage.html#mne.channels.make_standard_montage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.make_standard_montage</span></code></a></dt><dd></dd>
+<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.make_dig_montage.html#mne.channels.make_dig_montage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.make_dig_montage</span></code></a></dt><dd></dd>
+<dt><a class="reference external" href="https://mne.tools/stable/generated/mne.channels.read_custom_montage.html#mne.channels.read_custom_montage" title="(in MNE v1.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mne.channels.read_custom_montage</span></code></a></dt><dd></dd>
 </dl>
 </div>
 <p class="rubric">Notes</p>
@@ -1502,7 +1503,7 @@ positions defined properly using their data reading functions.</p>
 <dd><p>Info of the LSL stream.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1721,7 +1722,7 @@ positions defined properly using their data reading functions.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2b23eb2b"></script>
+</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
