@@ -30,6 +30,11 @@ class ScopeEEG(_Scope):
             self._tch = self._channels_labels.index("TRIGGER")
             self._channels_labels.pop(self._tch)
             self._picks.pop(self._tch)
+        # patch for BioSemi trigger channel:
+        elif "Trig1" in self._channels_labels:
+            self._tch = self._channels_labels.index("Trig1")
+            self._channels_labels.pop(self._tch)
+            self._picks.pop(self._tch)
         else:
             self._tch = None
         self._picks = np.array(self._picks)
