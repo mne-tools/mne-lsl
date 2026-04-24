@@ -16,6 +16,11 @@
 
 .. _latest:
 
+Version 1.13.2
+==============
+
+- Patch in the legacy viewer the trigger channel for BioSemi system (:pr:`537` by `Mathieu Scheltienne`_)
+
 Version 1.13.1
 ==============
 
