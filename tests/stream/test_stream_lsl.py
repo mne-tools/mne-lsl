@@ -136,7 +136,7 @@ def test_stream(
         match_stream_and_raw_data(data, raw)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     # montage
-    montage_name = "colin27_1020" if check_version("mne", "1.14") else "standard_1020"
+    montage_name = "colin27_1020" if check_version("mne", "1.13") else "standard_1020"
     stream.set_montage(montage_name)
     stream.plot_sensors()
     plt.close("all")
