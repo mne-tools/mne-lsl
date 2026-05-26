@@ -18,6 +18,7 @@ from mne._fiff.pick import _picks_to_idx
 from mne.channels import DigMontage
 from mne.io import RawArray
 from mne.io.base import BaseRaw
+from mne.utils import check_version
 from numpy.testing import assert_allclose
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
@@ -135,7 +136,8 @@ def test_stream(
         match_stream_and_raw_data(data, raw)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     # montage
-    stream.set_montage("standard_1020")
+    montage_name = "colin27_1020" if check_version("mne", "1.13") else "standard_1020"
+    stream.set_montage(montage_name)
     stream.plot_sensors()
     plt.close("all")
     montage = stream.get_montage()
