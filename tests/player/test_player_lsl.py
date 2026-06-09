@@ -16,7 +16,6 @@ from numpy.testing import assert_allclose
 
 from mne_lsl.lsl import StreamInlet, local_clock, resolve_streams
 from mne_lsl.player import PlayerLSL as Player
-from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 
 if TYPE_CHECKING:
@@ -445,46 +444,29 @@ def test_player_annotations(
     # find annotation stream and open an inlet
     inlet_annotations = _create_inlet(f"{name}-annotations", source_id)
 
-    # compare inlet stream info and annotations
+    # compare inlet stream info: 1 string channel named "description"
     sinfo = inlet_annotations.get_sinfo()
-    assert sinfo.n_channels == len(annotations)
-    assert sinfo.get_channel_names() == annotations
-    assert sinfo.get_channel_types() == ["annotations"] * sinfo.n_channels
-    assert sinfo.get_channel_units() == ["none"] * sinfo.n_channels
+    assert sinfo.n_channels == 1
+    assert sinfo.get_channel_names() == ["description"]
+    assert sinfo.get_channel_types() == ["annotations"]
+    assert sinfo.get_channel_units() == ["none"]
 
-    # compare content
-    data, ts = inlet_annotations.pull_chunk(timeout=1)
-    assert data.size != 0
-    assert ts.size == data.shape[0]
-    # compare with a Stream object for simplicity
-    stream = Stream(bufsize=40, stype="annotations", source_id=source_id)
-    stream.connect(processing_flags=["clocksync"])
-    assert stream.info["ch_names"] == annotations
-    assert stream.get_channel_types() == ["misc"] * sinfo.n_channels
+    # verify string data is received and descriptions match raw annotations
     time.sleep(3)  # acquire some annotations
-    for single, duration in zip(
-        ("bad_test", "test2", "test3"), (0.4, 0.1, 0.05), strict=True
-    ):
-        data, ts = stream.get_data(picks=single)
-        data = data.squeeze()
-        assert ts.size == data.size
-        idx = np.where(data != 0.0)[0]
-        assert_allclose(data[idx], [duration] * idx.size)
-        assert_allclose(np.diff(ts[idx]), 2, atol=1e-2)
-    time.sleep(3)
-    data, ts = stream.get_data(picks="test1")
-    data = data.squeeze()
-    idx = np.where(data != 0.0)[0]
-    assert_allclose(np.unique(data[idx]), [0.2, 0.55])
-    idx = np.where(data == 0.2)[0]
-    diff = np.diff(ts[idx])
-    expected = np.array([1.6, 0.3, 0.1])
-    start = np.where(1 <= diff)[0][0]
-    end = diff.size if diff.size <= start + 3 else start + 3
-    assert_allclose(diff[start:end], expected[: end - start], atol=1e-2)
+    all_descs = []
+    while True:
+        data, ts = inlet_annotations.pull_chunk(timeout=0.5)
+        if not data:
+            break
+        assert ts.size == len(data)
+        all_descs.extend(sample[0] for sample in data)
+
+    expected_descs = set(raw_annotations.annotations.description)
+    assert all(d in expected_descs for d in all_descs)
+    for desc in annotations:
+        assert desc in all_descs
 
     # clean-up
-    stream.disconnect()
     close_io()
     player.stop()
 
@@ -518,19 +500,21 @@ def test_player_annotations_no_duration(
     assert (f"{name}-annotations", source_id) in [
         (stream.name, stream.source_id) for stream in streams
     ]
-    # compare with a Stream object for simplicity
-    stream = Stream(bufsize=40, stype="annotations", source_id=source_id)
-    stream.connect(processing_flags=["clocksync"])
-    assert stream.info["ch_names"] == annotations
+    # verify string data is received correctly even when duration is 0
+    inlet_annotations = _create_inlet(f"{name}-annotations", source_id)
     time.sleep(3)  # acquire some annotations
-    for picks in ("bad_test", "test2", "test3"):
-        data, ts = stream.get_data(picks=picks)
-        data = data.squeeze()
-        assert ts.size == data.size
-        idx = np.where(data != 0.0)[0]
-        assert_allclose(data[idx], [-1] * idx.size)
+    all_descs = []
+    while True:
+        data, ts = inlet_annotations.pull_chunk(timeout=0.5)
+        if not data:
+            break
+        all_descs.extend(sample[0] for sample in data)
+
+    expected_descs = set(raw_annotations.annotations.description)
+    assert all(d in expected_descs for d in all_descs)
+    for desc in annotations:
+        assert desc in all_descs
     # clean-up
-    stream.disconnect()
     close_io()
     player.stop()
 
