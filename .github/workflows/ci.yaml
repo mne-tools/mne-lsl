@@ -201,7 +201,7 @@ jobs:
       - run: uv python -c "import mne_lsl, packaging; assert packaging.version.parse(mne_lsl.__version__) > packaging.version.parse('1.0.0'), mne_lsl.__version__"
       - name: Check metadata
         run: |
-          GOT_VERSION=$(pip show dist/*.tar.gz | grep Version: | awk '{print $2}')
+          GOT_VERSION=$(uv pip show dist/*.tar.gz | grep Version: | awk '{print $2}')
           echo "GOT_VERSION=$GOT_VERSION"
           uv python -c "import packaging; assert packaging.version.parse('$GOT_VERSION') > packaging.version.parse('1.0.0'), '$GOT_VERSION'"
 
