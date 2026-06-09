@@ -445,18 +445,17 @@ def test_player_annotations(
     # find annotation stream and open an inlet
     inlet_annotations = _create_inlet(f"{name}-annotations", source_id)
 
-    # compare inlet stream info and annotations
+    # compare inlet stream info: one channel per unique annotation description
     sinfo = inlet_annotations.get_sinfo()
     assert sinfo.n_channels == len(annotations)
     assert sinfo.get_channel_names() == annotations
     assert sinfo.get_channel_types() == ["annotations"] * sinfo.n_channels
     assert sinfo.get_channel_units() == ["none"] * sinfo.n_channels
 
-    # compare content
+    # verify content via Stream
     data, ts = inlet_annotations.pull_chunk(timeout=1)
     assert data.size != 0
     assert ts.size == data.shape[0]
-    # compare with a Stream object for simplicity
     stream = Stream(bufsize=40, stype="annotations", source_id=source_id)
     stream.connect(processing_flags=["clocksync"])
     assert stream.info["ch_names"] == annotations
@@ -490,6 +489,56 @@ def test_player_annotations(
 
 
 @pytest.mark.slow
+def test_player_annotations_string_encoding(
+    raw_annotations: BaseRaw,
+    close_io: Callable[[], None],
+    chunk_size: int,
+    request: pytest.FixtureRequest,
+) -> None:
+    """Test player with annotations using string encoding."""
+    name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
+    annotations = sorted(set(raw_annotations.annotations.description))
+    player = Player(
+        raw_annotations,
+        chunk_size=chunk_size,
+        name=name,
+        source_id=source_id,
+        annotations_encoding="string",
+    )
+    player.start()
+    streams = resolve_streams(timeout=2)
+    assert (f"{name}-annotations", source_id) in [
+        (stream.name, stream.source_id) for stream in streams
+    ]
+
+    inlet_annotations = _create_inlet(f"{name}-annotations", source_id)
+
+    sinfo = inlet_annotations.get_sinfo()
+    assert sinfo.n_channels == 1
+    assert sinfo.get_channel_names() == ["description"]
+    assert sinfo.get_channel_types() == ["annotations"]
+    assert sinfo.get_channel_units() == ["none"]
+
+    time.sleep(3)  # acquire some annotations
+    all_descs = []
+    while True:
+        data, ts = inlet_annotations.pull_chunk(timeout=0.5)
+        if not data:
+            break
+        assert ts.size == len(data)
+        all_descs.extend(sample[0] for sample in data)
+
+    expected_descs = set(raw_annotations.annotations.description)
+    assert all(d in expected_descs for d in all_descs)
+    for desc in annotations:
+        assert desc in all_descs
+
+    close_io()
+    player.stop()
+
+
+@pytest.mark.slow
 def test_player_annotations_no_duration(
     raw_annotations: BaseRaw,
     close_io: Callable[[], None],
@@ -518,7 +567,7 @@ def test_player_annotations_no_duration(
     assert (f"{name}-annotations", source_id) in [
         (stream.name, stream.source_id) for stream in streams
     ]
-    # compare with a Stream object for simplicity
+    # compare with a Stream object; duration=0 is encoded as -1 in one-hot mode
     stream = Stream(bufsize=40, stype="annotations", source_id=source_id)
     stream.connect(processing_flags=["clocksync"])
     assert stream.info["ch_names"] == annotations
