@@ -191,6 +191,8 @@ jobs:
       - run: ls -alt . && ls -alt dist/
       - uses: astral-sh/setup-uv@v7
       - run: uvx twine check --strict dist/*
+      - run: uvx pip install dist/*.tar.gz
+      - run: uvx python -c "import mne_lsl, packaging; assert packaging.version.parse(mne_lsl.__version__) > packaging.version.parse('1.0.0'), mne_lsl.__version__"
 
   doc-build:
     needs: cibuildwheel
