@@ -6,7 +6,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from setuptools import setup
-from setuptools.command.bdist_wheel import bdist_wheel
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.develop import develop as _develop
 from setuptools.dist import Distribution
@@ -107,19 +106,11 @@ class develop(_develop):  # noqa: D101
         super().run()
 
 
-class bdist_wheel_abi3(bdist_wheel):  # noqa: D101
-    def get_tag(self):  # noqa: D102
-        python, abi, plat = super().get_tag()
-        if python.startswith("cp") and not abi.endswith("t"):
-            return "cp311", "abi3", plat
-        return python, abi, plat
-
-
 setup(
     cmdclass={
         "build_ext": build_ext,
-        "bdist_wheel": bdist_wheel_abi3,
         "develop": develop,
     },
+    options={"bdist_wheel": {"py_limited_api": "cp311"}},
     distclass=BinaryDistribution,
 )
