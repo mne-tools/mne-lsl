@@ -2,6 +2,7 @@ import os
 import platform
 import shutil
 import subprocess
+import sysconfig
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -106,11 +107,16 @@ class develop(_develop):  # noqa: D101
         super().run()
 
 
+options = dict()
+is_freethreaded = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
+if not is_freethreaded:
+    options["bdist_wheel"] = {"py_limited_api": "cp311"}
+
 setup(
     cmdclass={
         "build_ext": build_ext,
         "develop": develop,
     },
-    options={"bdist_wheel": {"py_limited_api": "cp311"}},
+    options=options,
     distclass=BinaryDistribution,
 )
