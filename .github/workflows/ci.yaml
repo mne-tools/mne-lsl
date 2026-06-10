@@ -182,6 +182,9 @@ jobs:
     name: run twine check
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -190,7 +193,19 @@ jobs:
           path: dist
       - run: ls -alt . && ls -alt dist/
       - uses: astral-sh/setup-uv@v7
+        with:
+          activate-environment: true
+          python-version: '3.13'
       - run: uvx twine check --strict dist/*
+      - run: uv pip install dist/*.tar.gz
+      - run: uv run python -c "import mne_lsl; from packaging.version import parse; assert parse(mne_lsl.__version__) > parse('1.0.0'), mne_lsl.__version__"
+      - name: Check metadata
+        run: |
+          uv pip show mne-lsl
+          GOT_VERSION=$(uv pip show mne-lsl | grep Version: | awk '{print $2}')
+          echo "GOT_VERSION=$GOT_VERSION"
+          uv run python -c "from packaging.version import parse; assert parse('$GOT_VERSION') > parse('1.0.0'), '$GOT_VERSION'"
+
 
   doc-build:
     needs: cibuildwheel
