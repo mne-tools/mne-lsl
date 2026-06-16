@@ -166,9 +166,7 @@ class PlayerLSL(BasePlayer):
                     dtype=np.float64,
                     source_id=self._source_id,
                 )
-                self._sinfo_annotations.set_channel_names(
-                    list(self._annotations_names)
-                )
+                self._sinfo_annotations.set_channel_names(list(self._annotations_names))
             else:  # "string"
                 self._annotations_names = None
                 self._sinfo_annotations = StreamInfo(
