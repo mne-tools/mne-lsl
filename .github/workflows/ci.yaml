@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0
           submodules: true
       - uses: astral-sh/setup-uv@v7
-      - uses: pypa/cibuildwheel@v3.4.1
+      - uses: pypa/cibuildwheel@v4.0.0
         env:
           MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ (github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[liblsl]')) && '1' || '0' }}
       - uses: actions/upload-artifact@v7
@@ -89,7 +89,7 @@ jobs:
           retry_error_codes: "3,127,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         if: ${{ github.repository == 'mne-tools/mne-lsl' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -130,7 +130,7 @@ jobs:
           retry_error_codes: "3,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         if: ${{ github.repository == 'mne-tools/mne-lsl' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -156,7 +156,7 @@ jobs:
           retry_error_codes: "3,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         if: ${{ github.repository == 'mne-tools/mne-lsl' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -182,6 +182,9 @@ jobs:
     name: run twine check
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -190,7 +193,19 @@ jobs:
           path: dist
       - run: ls -alt . && ls -alt dist/
       - uses: astral-sh/setup-uv@v7
+        with:
+          activate-environment: true
+          python-version: '3.13'
       - run: uvx twine check --strict dist/*
+      - run: uv pip install dist/*.tar.gz
+      - run: uv run python -c "import mne_lsl; from packaging.version import parse; assert parse(mne_lsl.__version__) > parse('1.0.0'), mne_lsl.__version__"
+      - name: Check metadata
+        run: |
+          uv pip show mne-lsl
+          GOT_VERSION=$(uv pip show mne-lsl | grep Version: | awk '{print $2}')
+          echo "GOT_VERSION=$GOT_VERSION"
+          uv run python -c "from packaging.version import parse; assert parse('$GOT_VERSION') > parse('1.0.0'), '$GOT_VERSION'"
+
 
   doc-build:
     needs: cibuildwheel
