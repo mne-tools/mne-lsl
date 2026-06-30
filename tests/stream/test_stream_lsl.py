@@ -823,12 +823,19 @@ def _player_mock_lsl_stream_annotations(
     name: str,
     source_id: str,
     status: mp.managers.ProxyValue,
+    annotations_encoding: str = "one-hot",
 ) -> None:
     """Player for the '_mock_lsl_stream_annotations' fixture."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL
 
-    player = PlayerLSL(raw, chunk_size=chunk_size, name=name, source_id=source_id)
+    player = PlayerLSL(
+        raw,
+        chunk_size=chunk_size,
+        name=name,
+        source_id=source_id,
+        annotations_encoding=annotations_encoding,
+    )
     player.start()
     status.value = 1
     while status.value:
@@ -840,7 +847,7 @@ def _player_mock_lsl_stream_annotations(
 def mock_lsl_stream_annotations(
     raw_annotations: BaseRaw, request: pytest.FixtureRequest, chunk_size: int
 ) -> Generator[DummyPlayer, None, None]:
-    """Create a mock LSL stream streaming the channel number continuously."""
+    """Create a mock LSL stream with one-hot encoded annotation channels."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
     name = f"P_{request.node.name}"
@@ -858,9 +865,31 @@ def mock_lsl_stream_annotations(
     process.kill()
 
 
+@pytest.fixture
+def mock_lsl_stream_annotations_string(
+    raw_annotations: BaseRaw, request: pytest.FixtureRequest, chunk_size: int
+) -> Generator[DummyPlayer, None, None]:
+    """Create a mock LSL stream with string-encoded annotation channel."""
+    manager = mp.Manager()
+    status = manager.Value("i", 0)
+    name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
+    process = mp.Process(
+        target=_player_mock_lsl_stream_annotations,
+        args=(raw_annotations, chunk_size, name, source_id, status, "string"),
+    )
+    process.start()
+    while status.value != 1:
+        pass
+    yield DummyPlayer(name=name, source_id=source_id)
+    status.value = 0
+    process.join(timeout=2)
+    process.kill()
+
+
 @pytest.mark.slow
 def test_stream_annotations_picks(mock_lsl_stream_annotations: DummyPlayer) -> None:
-    """Test sub-selection of annotations."""
+    """Test sub-selection of annotations with one-hot encoding."""
     stream = (
         Stream(
             bufsize=5,
@@ -874,6 +903,39 @@ def test_stream_annotations_picks(mock_lsl_stream_annotations: DummyPlayer) -> N
     data, ts = stream.get_data()
     assert np.count_nonzero(data) == data.size
     stream.disconnect()
+
+
+@pytest.mark.slow
+def test_stream_annotations_string_dtype(
+    mock_lsl_stream_annotations_string: DummyPlayer,
+) -> None:
+    """Test that string-encoded annotation streams require StreamInlet."""
+    from mne_lsl.lsl import StreamInlet, resolve_streams
+
+    # Stream class does not support string-dtype streams
+    with pytest.raises(RuntimeError, match="string LSL streams"):
+        Stream(
+            bufsize=5,
+            stype="annotations",
+            source_id=mock_lsl_stream_annotations_string.source_id,
+        ).connect()
+
+    # StreamInlet can receive the string annotation descriptions directly
+    sinfos = resolve_streams(timeout=2)
+    anno_sinfos = [
+        s
+        for s in sinfos
+        if s.stype == "annotations"
+        and s.source_id == mock_lsl_stream_annotations_string.source_id
+    ]
+    assert len(anno_sinfos) == 1
+    assert anno_sinfos[0].dtype == "string"
+    inlet = StreamInlet(anno_sinfos[0])
+    inlet.open_stream(timeout=10)
+    time.sleep(3)
+    data, ts = inlet.pull_chunk(timeout=1)
+    assert len(data) > 0
+    assert all(isinstance(sample[0], str) for sample in data)
 
 
 @pytest.mark.slow
