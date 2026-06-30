@@ -84,24 +84,17 @@ class PlayerLSL(BasePlayer):
 
     If :class:`~mne.Annotations` are streamed, the :class:`~mne_lsl.lsl.StreamOutlet`
     name is ``{name}-annotations`` where ``name`` is the name of the
-    :class:`~mne_lsl.player.PlayerLSL`. The ``dtype`` is set to ``np.float64`` and each
-    unique :class:`~mne.Annotations` description is encoded as a channel. The value
-    streamed on a channel correspond to the duration of the :class:`~mne.Annotations`.
-    Thus, a sample on this :class:`~mne_lsl.lsl.StreamOutlet` is a one-hot encoded
-    vector of the :class:`~mne.Annotations` description/duration.
-
-    .. note::
-
-        If the duration of an annotatation is ``0``, then the one-hot encoded vector
-        becomes a null vector. In this special case, the value ``-1`` is encoded and
-        denotes an annotation with a duration of ``0``.
+    :class:`~mne_lsl.player.PlayerLSL`. The ``dtype`` is set to ``'string'`` with a
+    single channel named ``'description'``. Each sample on this
+    :class:`~mne_lsl.lsl.StreamOutlet` contains the annotation description string.
+    Use a :class:`~mne_lsl.lsl.StreamInlet` directly to receive this stream, as the
+    :class:`~mne_lsl.stream.StreamLSL` class does not support string-type streams.
     """
 
     _name: Incomplete
     _source_id: Incomplete
     _annotations: Incomplete
     _sinfo: Incomplete
-    _annotations_names: Incomplete
     _sinfo_annotations: Incomplete
     _annotations_idx: Incomplete
 

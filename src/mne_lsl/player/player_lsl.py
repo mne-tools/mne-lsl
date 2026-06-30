@@ -85,17 +85,11 @@ class PlayerLSL(BasePlayer):
 
     If :class:`~mne.Annotations` are streamed, the :class:`~mne_lsl.lsl.StreamOutlet`
     name is ``{name}-annotations`` where ``name`` is the name of the
-    :class:`~mne_lsl.player.PlayerLSL`. The ``dtype`` is set to ``np.float64`` and each
-    unique :class:`~mne.Annotations` description is encoded as a channel. The value
-    streamed on a channel correspond to the duration of the :class:`~mne.Annotations`.
-    Thus, a sample on this :class:`~mne_lsl.lsl.StreamOutlet` is a one-hot encoded
-    vector of the :class:`~mne.Annotations` description/duration.
-
-    .. note::
-
-        If the duration of an annotatation is ``0``, then the one-hot encoded vector
-        becomes a null vector. In this special case, the value ``-1`` is encoded and
-        denotes an annotation with a duration of ``0``.
+    :class:`~mne_lsl.player.PlayerLSL`. The ``dtype`` is set to ``'string'`` with a
+    single channel named ``'description'``. Each sample on this
+    :class:`~mne_lsl.lsl.StreamOutlet` contains the annotation description string.
+    Use a :class:`~mne_lsl.lsl.StreamInlet` directly to receive this stream, as the
+    :class:`~mne_lsl.stream.StreamLSL` class does not support string-type streams.
     """
 
     def __init__(
@@ -139,21 +133,15 @@ class PlayerLSL(BasePlayer):
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)
         if self._annotations:
-            self._annotations_names = {
-                name: idx
-                for idx, name in enumerate(
-                    sorted(set(self._raw.annotations.description))
-                )
-            }
             self._sinfo_annotations = StreamInfo(
                 name=f"{self._name}-annotations",
                 stype="annotations",
-                n_channels=len(self._annotations_names),
+                n_channels=1,
                 sfreq=0.0,
-                dtype=np.float64,
+                dtype="string",
                 source_id=self._source_id,
             )
-            self._sinfo_annotations.set_channel_names(list(self._annotations_names))
+            self._sinfo_annotations.set_channel_names(["description"])
             self._sinfo_annotations.set_channel_types("annotations")
             self._sinfo_annotations.set_channel_units("none")
             self._annotations_idx = self._raw.time_as_index(self._raw.annotations.onset)
@@ -343,25 +331,15 @@ class PlayerLSL(BasePlayer):
             )
             - self._raw.times[start]
         )
-        # one-hot encode the description and duration in the channels
-        idx_ = np.array(
-            [
-                self._annotations_names[desc]
-                for desc in self.annotations.description[idx]
-            ]
-        )
-        data = np.zeros((timestamps.size, len(self._annotations_names)))
-        durations = self.annotations.duration[idx]
-        durations[durations == 0] = -1
-        data[np.arange(timestamps.size), idx_] = durations
-        # push as a chunk all annotations in the [start:stop] range
+        # push description strings directly
+        descriptions = [[desc] for desc in self.annotations.description[idx]]
         with catch_warnings():
             filterwarnings(
                 "ignore",
                 message="A single sample is pushed. Consider using push_sample().",
                 category=RuntimeWarning,
             )
-            self._outlet_annotations.push_chunk(data, timestamps)
+            self._outlet_annotations.push_chunk(descriptions, timestamps)
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""

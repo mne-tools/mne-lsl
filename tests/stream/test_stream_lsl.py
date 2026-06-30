@@ -859,21 +859,36 @@ def mock_lsl_stream_annotations(
 
 
 @pytest.mark.slow
-def test_stream_annotations_picks(mock_lsl_stream_annotations: DummyPlayer) -> None:
-    """Test sub-selection of annotations."""
-    stream = (
+def test_stream_annotations_string_dtype(
+    mock_lsl_stream_annotations: DummyPlayer,
+) -> None:
+    """Test that annotation streams use string dtype and require StreamInlet."""
+    from mne_lsl.lsl import StreamInlet, resolve_streams
+
+    # Stream class does not support string-dtype streams
+    with pytest.raises(RuntimeError, match="string LSL streams"):
         Stream(
             bufsize=5,
             stype="annotations",
             source_id=mock_lsl_stream_annotations.source_id,
-        )
-        .connect()
-        .pick("test1")
-    )
-    time.sleep(5)  # acquire data
-    data, ts = stream.get_data()
-    assert np.count_nonzero(data) == data.size
-    stream.disconnect()
+        ).connect()
+
+    # StreamInlet can receive the string annotation descriptions directly
+    sinfos = resolve_streams(timeout=2)
+    anno_sinfos = [
+        s
+        for s in sinfos
+        if s.stype == "annotations"
+        and s.source_id == mock_lsl_stream_annotations.source_id
+    ]
+    assert len(anno_sinfos) == 1
+    assert anno_sinfos[0].dtype == "string"
+    inlet = StreamInlet(anno_sinfos[0])
+    inlet.open_stream(timeout=10)
+    time.sleep(3)
+    data, ts = inlet.pull_chunk(timeout=1)
+    assert len(data) > 0
+    assert all(isinstance(sample[0], str) for sample in data)
 
 
 @pytest.mark.slow
