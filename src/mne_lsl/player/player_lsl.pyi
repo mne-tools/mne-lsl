@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from pathlib import Path
+from typing import Literal
 
 from _typeshed import Incomplete
 from mne import Annotations
@@ -9,6 +10,7 @@ from ..lsl import StreamInfo as StreamInfo
 from ..lsl import StreamOutlet as StreamOutlet
 from ..lsl import local_clock as local_clock
 from ..utils._checks import check_type as check_type
+from ..utils._checks import check_value as check_value
 from ..utils._docs import copy_doc as copy_doc
 from ..utils._docs import fill_doc as fill_doc
 from ..utils._time import high_precision_sleep as high_precision_sleep
@@ -45,6 +47,15 @@ class PlayerLSL(BasePlayer):
         created only if the :class:`~mne.io.Raw` object has :class:`~mne.Annotations` to
         push. See notes for additional information on the :class:`~mne.Annotations`
         timestamps.
+    annotations_encoding : ``'one-hot'`` | ``'string'``
+        Encoding format for the annotations stream. ``'one-hot'`` (default) creates one
+        ``float64`` channel per unique :class:`~mne.Annotations` description; the value
+        on each channel is the annotation duration (``-1`` when the duration is ``0``).
+        ``'string'`` creates a single channel named ``'description'`` with ``dtype``
+        ``'string'``; each sample contains the annotation description as a plain string.
+        Use a :class:`~mne_lsl.lsl.StreamInlet` directly to receive a ``'string'``
+        stream, as :class:`~mne_lsl.stream.StreamLSL` does not support string-type
+        streams.
 
     Notes
     -----
@@ -84,19 +95,20 @@ class PlayerLSL(BasePlayer):
 
     If :class:`~mne.Annotations` are streamed, the :class:`~mne_lsl.lsl.StreamOutlet`
     name is ``{name}-annotations`` where ``name`` is the name of the
-    :class:`~mne_lsl.player.PlayerLSL`. The ``dtype`` is set to ``np.float64`` and each
-    unique :class:`~mne.Annotations` description is encoded as a channel. The value
-    streamed on a channel correspond to the duration of the :class:`~mne.Annotations`.
-    Thus, a sample on this :class:`~mne_lsl.lsl.StreamOutlet` is a one-hot encoded
-    vector of the :class:`~mne.Annotations` description/duration.
+    :class:`~mne_lsl.player.PlayerLSL`. With ``annotations_encoding='one-hot'``
+    (default) the ``dtype`` is ``np.float64`` and each unique annotation description
+    becomes a channel; the value is the annotation duration (``-1`` when duration is
+    ``0``). With ``annotations_encoding='string'`` the ``dtype`` is ``'string'`` with
+    a single channel named ``'description'``; each sample contains the annotation
+    description as a string.
 
     .. note::
 
-        If the duration of an annotatation is ``0``, then the one-hot encoded vector
-        becomes a null vector. In this special case, the value ``-1`` is encoded and
-        denotes an annotation with a duration of ``0``.
+        When using the ``'string'`` encoding, the duration of the annotation is lost
+        information.
     """
 
+    _annotations_encoding: Incomplete
     _name: Incomplete
     _source_id: Incomplete
     _annotations: Incomplete
@@ -114,6 +126,7 @@ class PlayerLSL(BasePlayer):
         name: str | None = None,
         source_id: str = "MNE-LSL",
         annotations: bool | None = None,
+        annotations_encoding: Literal["one-hot", "string"] = "one-hot",
     ) -> None: ...
     def rename_channels(
         self,
