@@ -19,4 +19,4 @@
 Version 1.14
 ============
 
-- xxx
+- Add alternative to stream annotations on a single string typed channel (:pr:`554` by `Alin G. Chitu`_)

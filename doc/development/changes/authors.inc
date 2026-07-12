@@ -1,3 +1,4 @@
+.. _Alin G. Chitu: https://github.com/agchitu
 .. _Arnaud Desvachez: https://github.com/dnastars
 .. _Daniel McCloy: https://dan.mccloy.info
 .. _Eric Larson: https://github.com/larsoner
