@@ -8,7 +8,7 @@ from mne import Annotations
 from mne.annotations import _handle_meas_date
 
 from ..lsl import StreamInfo, StreamOutlet, local_clock
-from ..utils._checks import check_type
+from ..utils._checks import check_type, check_value
 from ..utils._docs import copy_doc, fill_doc
 from ..utils._time import high_precision_sleep
 from ..utils.logs import logger, warn
@@ -100,6 +100,11 @@ class PlayerLSL(BasePlayer):
     ``0``). With ``annotations_encoding='string'`` the ``dtype`` is ``'string'`` with
     a single channel named ``'description'``; each sample contains the annotation
     description as a string.
+
+    .. note::
+
+        When using the ``'string'`` encoding, the duration of the annotation is lost
+        information.
     """
 
     def __init__(
@@ -118,11 +123,7 @@ class PlayerLSL(BasePlayer):
         check_type(source_id, (str,), "source_id")
         check_type(annotations, (bool, None), "annotations")
         check_type(annotations_encoding, (str,), "annotations_encoding")
-        if annotations_encoding not in ("one-hot", "string"):
-            raise ValueError(
-                f"annotations_encoding must be 'one-hot' or 'string', got "
-                f"'{annotations_encoding}' instead."
-            )
+        check_value(annotations_encoding, ("one-hot", "string"), "annotations_encoding")
         self._annotations_encoding = annotations_encoding
         self._name = "MNE-LSL-Player" if name is None else name
         self._source_id = source_id

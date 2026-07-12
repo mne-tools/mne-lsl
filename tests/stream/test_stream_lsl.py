@@ -23,7 +23,7 @@ from numpy.testing import assert_allclose
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
 
-from mne_lsl.lsl import StreamInfo, StreamOutlet
+from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet, resolve_streams
 from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 from mne_lsl.utils.logs import _use_log_level
@@ -910,8 +910,6 @@ def test_stream_annotations_string_dtype(
     mock_lsl_stream_annotations_string: DummyPlayer,
 ) -> None:
     """Test that string-encoded annotation streams require StreamInlet."""
-    from mne_lsl.lsl import StreamInlet, resolve_streams
-
     # Stream class does not support string-dtype streams
     with pytest.raises(RuntimeError, match="string LSL streams"):
         Stream(
