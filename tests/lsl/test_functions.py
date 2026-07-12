@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -11,8 +12,13 @@ from mne_lsl.lsl import (
     local_clock,
     protocol_version,
     resolve_streams,
+    set_config_content,
+    set_config_filename,
 )
 from mne_lsl.lsl.load_liblsl import _VERSION_MIN, _VERSION_PROTOCOL
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_library_version() -> None:
@@ -35,6 +41,20 @@ def test_local_clock() -> None:
     assert isinstance(ts, float)
     assert ts >= 0
     assert local_clock() >= ts
+
+
+def test_set_config(tmp_path: Path) -> None:
+    """Test setting the liblsl configuration."""
+    with pytest.raises(TypeError, match="'content' must be an instance of str"):
+        set_config_content(101)
+    with pytest.raises(TypeError, match="'filename' must be an instance of str"):
+        set_config_filename(101)
+    # an empty configuration is equivalent to the default configuration, thus it is safe
+    # to apply during the test session.
+    set_config_content("")
+    fname = tmp_path / "lsl_api.cfg"
+    fname.write_text("")
+    set_config_filename(str(fname))
 
 
 @pytest.mark.xfail(reason="Fails if streams are present in the background.")
