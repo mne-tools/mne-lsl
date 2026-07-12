@@ -7,8 +7,8 @@ Player with annotations
 .. include:: ./../../links.inc
 
 :class:`~mne.Annotations` from a :class:`~mne.io.Raw` object can be streamed as an event
-stream by :class:`~mne_lsl.player.PlayerLSL`. The stream will be irregularly sampled,
-numerical, and of type ``'annotations'``.
+stream by :class:`~mne_lsl.player.PlayerLSL`. The stream is irregularly sampled and of
+type ``'annotations'``.
 
 A :class:`~mne.Annotations` contain 3 information:
 
@@ -16,17 +16,30 @@ A :class:`~mne.Annotations` contain 3 information:
 - the duration of the annotation
 - the description of the annotation
 
-To stream all 3 information, it's duration-hod encoded along the channels. For instance,
-consider a :class:`~mne.io.Raw` object with 3 different :class:`~mne.Annotations`
-description: ``'event1'``, ``'event2'``, and ``'event3'``. The event stream will have 3
-channels, each corresponding to one of the 3 descriptions. When an annotation is
-streamed, it's duration is encoded as the value on its channel while the other channels
-remain to zero.
+The :class:`~mne_lsl.player.PlayerLSL` supports two encodings for the annotation stream,
+selected with the ``annotations_encoding`` argument.
+
+With the default ``annotations_encoding="one-hot"``, all 3 information are streamed on a
+numerical stream by encoding the duration on a one-hot representation of the description
+along the channels. For instance, consider a :class:`~mne.io.Raw` object with 3
+different :class:`~mne.Annotations` description: ``'event1'``, ``'event2'``, and
+``'event3'``. The event stream will have 3 channels, each corresponding to one of the 3
+descriptions. When an annotation is streamed, its duration is encoded as the value on
+its channel while the other channels remain to zero.
 
 .. note::
 
     Annotation with a duration equal to zero are special cased and yield an encoded
     value of ``-1``.
+
+With ``annotations_encoding="string"``, only the description is streamed, on a single
+``'string'``-typed channel named ``'description'``. This is convenient when a file
+contains a large or variable number of unique descriptions, as the number of channels
+no longer depends on the annotations present. The onset is still conveyed through the
+sample timestamp, but the duration is not encoded and therefore lost. A
+``'string'``-typed stream must be received with a :class:`~mne_lsl.lsl.StreamInlet`
+directly, as the :class:`~mne_lsl.stream.StreamLSL` and
+:class:`~mne_lsl.stream.EpochsStream` classes only support numerical streams.
 """
 
 # sphinx_gallery_thumbnail_number = 2
@@ -40,6 +53,7 @@ from mne import Annotations, create_info
 from mne.io import RawArray
 from mne.viz import set_browser_backend
 
+from mne_lsl.lsl import StreamInlet, resolve_streams
 from mne_lsl.player import PlayerLSL
 from mne_lsl.stream import StreamLSL
 
@@ -180,4 +194,60 @@ stream_annotations.disconnect()
 
 # %%
 
+player.stop()
+
+# %%
+# Streaming annotations as strings
+# --------------------------------
+#
+# The one-hot encoding above conveys the onset, duration and description, but it creates
+# one channel per unique description. With many unique descriptions, e.g. a file with
+# hundreds of distinct markers, this yields a large and file-dependent number of
+# channels. If the duration is not needed, ``annotations_encoding="string"`` streams the
+# descriptions on a single ``'string'``-typed channel named ``'description'`` instead.
+
+source_id = uuid.uuid4().hex
+player = PlayerLSL(
+    raw,
+    chunk_size=1,
+    name="tutorial-annots-str",
+    source_id=source_id,
+    annotations_encoding="string",
+).start()
+
+# %%
+# A ``'string'``-typed stream can not be received with a
+# :class:`~mne_lsl.stream.StreamLSL`, which only supports numerical streams. We resolve
+# the annotation stream and connect to it with a :class:`~mne_lsl.lsl.StreamInlet`
+# instead.
+
+sinfo = [
+    stream
+    for stream in resolve_streams(timeout=2)
+    if stream.stype == "annotations" and stream.source_id == source_id
+][0]
+inlet = StreamInlet(sinfo)
+inlet.open_stream(timeout=5)
+
+# %%
+# Each pulled sample is a list with a single element: the annotation description. The
+# associated timestamp still encodes the onset, while the duration is lost.
+
+descriptions = []
+for _ in range(20):
+    data, ts = inlet.pull_chunk(timeout=1)
+    descriptions.extend(sample[0] for sample in data)
+    if 4 <= len(descriptions):
+        break
+descriptions
+
+# %%
+# Free resources.
+#
+# Similarly, when you are done with a :class:`~mne_lsl.lsl.StreamInlet`, don't forget to
+# free the resources they use to continuously mock an LSL stream or receive new data
+# from an LSL stream.
+
+inlet.close_stream()
+del inlet
 player.stop()
