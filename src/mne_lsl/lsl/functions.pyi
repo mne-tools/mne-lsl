@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from ..utils._checks import check_type as check_type
 from ..utils._checks import ensure_int as ensure_int
+from ..utils._checks import ensure_path as ensure_path
 from .load_liblsl import lib as lib
 from .stream_info import _BaseStreamInfo as _BaseStreamInfo
 
@@ -39,7 +42,7 @@ def local_clock() -> float:
         Local timestamp in seconds.
     """
 
-def set_config_filename(filename: str) -> None:
+def set_config_filename(filename: str | Path) -> None:
     """Set a custom configuration file for liblsl.
 
     Override the file from which liblsl loads its configuration. By default, liblsl
@@ -49,7 +52,7 @@ def set_config_filename(filename: str) -> None:
 
     Parameters
     ----------
-    filename : str
+    filename : str | Path
         Path to the configuration file to load.
 
     Notes
