@@ -103,8 +103,8 @@ class PlayerLSL(BasePlayer):
 
     .. note::
 
-        When using the ``'string'`` encoding, the duration of the annotation is lost
-        information.
+        When using the ``'string'`` encoding, the annotation duration is not encoded
+        and therefore lost.
     """
 
     def __init__(

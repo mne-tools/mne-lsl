@@ -196,6 +196,14 @@ def test_player_invalid_arguments(fname: Path) -> None:
         Player(fname, name="101", chunk_size=101.0)
     with pytest.raises(ValueError, match="strictly positive integer"):
         Player(fname, name="101", chunk_size=-101)
+    with pytest.raises(
+        TypeError, match="'annotations_encoding' must be an instance of str"
+    ):
+        Player(fname, name="101", annotations_encoding=101)
+    with pytest.raises(
+        ValueError, match="Invalid value for the 'annotations_encoding' parameter"
+    ):
+        Player(fname, name="101", annotations_encoding="invalid")
 
 
 def test_player_stop_invalid(
