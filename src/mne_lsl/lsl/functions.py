@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 from ctypes import byref, c_char_p, c_double, c_void_p
+from typing import TYPE_CHECKING
 
 from ..utils._checks import check_type, ensure_int, ensure_path
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def library_version() -> int:
@@ -49,7 +53,7 @@ def local_clock() -> float:
     return lib.lsl_local_clock()
 
 
-def set_config_filename(filename: str) -> None:
+def set_config_filename(filename: str | Path) -> None:
     """Set a custom configuration file for liblsl.
 
     Override the file from which liblsl loads its configuration. By default, liblsl
@@ -59,7 +63,7 @@ def set_config_filename(filename: str) -> None:
 
     Parameters
     ----------
-    filename : str
+    filename : str | Path
         Path to the configuration file to load.
 
     Notes
