@@ -47,14 +47,16 @@ def test_set_config(tmp_path: Path) -> None:
     """Test setting the liblsl configuration."""
     with pytest.raises(TypeError, match="'content' must be an instance of str"):
         set_config_content(101)
-    with pytest.raises(TypeError, match="'filename' must be an instance of str"):
+    with pytest.raises(TypeError, match="can not be converted"):
         set_config_filename(101)
+    with pytest.raises(FileNotFoundError):
+        set_config_filename(tmp_path / "non-existent.cfg")
     # an empty configuration is equivalent to the default configuration, thus it is safe
     # to apply during the test session.
     set_config_content("")
     fname = tmp_path / "lsl_api.cfg"
     fname.write_text("")
-    set_config_filename(str(fname))
+    set_config_filename(fname)
 
 
 @pytest.mark.xfail(reason="Fails if streams are present in the background.")
