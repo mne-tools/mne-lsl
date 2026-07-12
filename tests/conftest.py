@@ -61,8 +61,8 @@ def pytest_configure(config: pytest.Config) -> None:
     ignore:.*interactive_bk.*:matplotlib._api.deprecation.MatplotlibDeprecationWarning
     # Pillow deprecation issued from matplotlib
     ignore:'mode' parameter is deprecated.*:DeprecationWarning
-    # tkinter
-    ignore:Exception ignored in.*__del__.*:pytest.PytestUnraisableExceptionWarning
+    # tkinter; Python 3.14 reworded to 'while calling deallocator'
+    ignore:Exception ignored.*__del__.*:pytest.PytestUnraisableExceptionWarning
     # NumPy deprecation hitting MNE-Python: github.com/mne-tools/mne-python/pull/13585
     ignore:Setting the shape on a NumPy array has been deprecated.*:DeprecationWarning
     """
