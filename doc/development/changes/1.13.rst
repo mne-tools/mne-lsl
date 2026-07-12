@@ -14,6 +14,11 @@
 
 .. include:: ./authors.inc
 
+Version 1.13.2
+==============
+
+- Patch legacy StreamViewer for BioSemi system (:pr:`537` by `Mathieu Scheltienne`_)
+
 Version 1.13.1
 ==============
 

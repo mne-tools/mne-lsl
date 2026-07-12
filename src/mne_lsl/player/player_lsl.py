@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from warnings import catch_warnings, filterwarnings
 
 import numpy as np
@@ -8,7 +8,7 @@ from mne import Annotations
 from mne.annotations import _handle_meas_date
 
 from ..lsl import StreamInfo, StreamOutlet, local_clock
-from ..utils._checks import check_type
+from ..utils._checks import check_type, check_value
 from ..utils._docs import copy_doc, fill_doc
 from ..utils._time import high_precision_sleep
 from ..utils.logs import logger, warn
@@ -46,6 +46,15 @@ class PlayerLSL(BasePlayer):
         created only if the :class:`~mne.io.Raw` object has :class:`~mne.Annotations` to
         push. See notes for additional information on the :class:`~mne.Annotations`
         timestamps.
+    annotations_encoding : {'one-hot', 'string'}
+        Encoding format for the annotations stream. ``'one-hot'`` (default) creates one
+        ``float64`` channel per unique :class:`~mne.Annotations` description; the value
+        on each channel is the annotation duration (``-1`` when the duration is ``0``).
+        ``'string'`` creates a single channel named ``'description'`` with ``dtype``
+        ``'string'``; each sample contains the annotation description as a plain string.
+        Use a :class:`~mne_lsl.lsl.StreamInlet` directly to receive a ``'string'``
+        stream, as :class:`~mne_lsl.stream.StreamLSL` does not support string-type
+        streams.
 
     Notes
     -----
@@ -85,17 +94,17 @@ class PlayerLSL(BasePlayer):
 
     If :class:`~mne.Annotations` are streamed, the :class:`~mne_lsl.lsl.StreamOutlet`
     name is ``{name}-annotations`` where ``name`` is the name of the
-    :class:`~mne_lsl.player.PlayerLSL`. The ``dtype`` is set to ``np.float64`` and each
-    unique :class:`~mne.Annotations` description is encoded as a channel. The value
-    streamed on a channel correspond to the duration of the :class:`~mne.Annotations`.
-    Thus, a sample on this :class:`~mne_lsl.lsl.StreamOutlet` is a one-hot encoded
-    vector of the :class:`~mne.Annotations` description/duration.
+    :class:`~mne_lsl.player.PlayerLSL`. With ``annotations_encoding='one-hot'``
+    (default) the ``dtype`` is ``np.float64`` and each unique annotation description
+    becomes a channel; the value is the annotation duration (``-1`` when duration is
+    ``0``). With ``annotations_encoding='string'`` the ``dtype`` is ``'string'`` with
+    a single channel named ``'description'``; each sample contains the annotation
+    description as a string.
 
     .. note::
 
-        If the duration of an annotatation is ``0``, then the one-hot encoded vector
-        becomes a null vector. In this special case, the value ``-1`` is encoded and
-        denotes an annotation with a duration of ``0``.
+        When using the ``'string'`` encoding, the annotation duration is not encoded
+        and therefore lost.
     """
 
     def __init__(
@@ -107,11 +116,15 @@ class PlayerLSL(BasePlayer):
         name: str | None = None,
         source_id: str = "MNE-LSL",
         annotations: bool | None = None,
+        annotations_encoding: Literal["one-hot", "string"] = "one-hot",
     ) -> None:
         super().__init__(fname, chunk_size, n_repeat)
         check_type(name, (str, None), "name")
         check_type(source_id, (str,), "source_id")
         check_type(annotations, (bool, None), "annotations")
+        check_type(annotations_encoding, (str,), "annotations_encoding")
+        check_value(annotations_encoding, ("one-hot", "string"), "annotations_encoding")
+        self._annotations_encoding = annotations_encoding
         self._name = "MNE-LSL-Player" if name is None else name
         self._source_id = source_id
         # look for annotations
@@ -139,26 +152,39 @@ class PlayerLSL(BasePlayer):
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)
         if self._annotations:
-            self._annotations_names = {
-                name: idx
-                for idx, name in enumerate(
-                    sorted(set(self._raw.annotations.description))
+            if self._annotations_encoding == "one-hot":
+                self._annotations_names = {
+                    desc: idx
+                    for idx, desc in enumerate(
+                        sorted(set(self._raw.annotations.description))
+                    )
+                }
+                self._sinfo_annotations = StreamInfo(
+                    name=f"{self._name}-annotations",
+                    stype="annotations",
+                    n_channels=len(self._annotations_names),
+                    sfreq=0.0,
+                    dtype=np.float64,
+                    source_id=self._source_id,
                 )
-            }
-            self._sinfo_annotations = StreamInfo(
-                name=f"{self._name}-annotations",
-                stype="annotations",
-                n_channels=len(self._annotations_names),
-                sfreq=0.0,
-                dtype=np.float64,
-                source_id=self._source_id,
-            )
-            self._sinfo_annotations.set_channel_names(list(self._annotations_names))
+                self._sinfo_annotations.set_channel_names(list(self._annotations_names))
+            else:  # "string"
+                self._annotations_names = None
+                self._sinfo_annotations = StreamInfo(
+                    name=f"{self._name}-annotations",
+                    stype="annotations",
+                    n_channels=1,
+                    sfreq=0.0,
+                    dtype="string",
+                    source_id=self._source_id,
+                )
+                self._sinfo_annotations.set_channel_names(["description"])
             self._sinfo_annotations.set_channel_types("annotations")
             self._sinfo_annotations.set_channel_units("none")
             self._annotations_idx = self._raw.time_as_index(self._raw.annotations.onset)
             self._annotations_idx -= self._raw.first_samp
         else:
+            self._annotations_names = None
             self._sinfo_annotations = None
             self._annotations_idx = None
         # create additional streaming variables
@@ -343,25 +369,33 @@ class PlayerLSL(BasePlayer):
             )
             - self._raw.times[start]
         )
-        # one-hot encode the description and duration in the channels
-        idx_ = np.array(
-            [
-                self._annotations_names[desc]
-                for desc in self.annotations.description[idx]
-            ]
-        )
-        data = np.zeros((timestamps.size, len(self._annotations_names)))
-        durations = self.annotations.duration[idx]
-        durations[durations == 0] = -1
-        data[np.arange(timestamps.size), idx_] = durations
-        # push as a chunk all annotations in the [start:stop] range
-        with catch_warnings():
-            filterwarnings(
-                "ignore",
-                message="A single sample is pushed. Consider using push_sample().",
-                category=RuntimeWarning,
+        if self._annotations_encoding == "one-hot":
+            idx_ = np.array(
+                [
+                    self._annotations_names[desc]
+                    for desc in self.annotations.description[idx]
+                ]
             )
-            self._outlet_annotations.push_chunk(data, timestamps)
+            data = np.zeros((timestamps.size, len(self._annotations_names)))
+            durations = self.annotations.duration[idx]
+            durations[durations == 0] = -1
+            data[np.arange(timestamps.size), idx_] = durations
+            with catch_warnings():
+                filterwarnings(
+                    "ignore",
+                    message="A single sample is pushed. Consider using push_sample().",
+                    category=RuntimeWarning,
+                )
+                self._outlet_annotations.push_chunk(data, timestamps)
+        else:  # "string"
+            descriptions = [[desc] for desc in self.annotations.description[idx]]
+            with catch_warnings():
+                filterwarnings(
+                    "ignore",
+                    message="A single sample is pushed. Consider using push_sample().",
+                    category=RuntimeWarning,
+                )
+                self._outlet_annotations.push_chunk(descriptions, timestamps)
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
