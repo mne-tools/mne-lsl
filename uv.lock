@@ -1295,7 +1295,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.1" },
-    { name = "mne", specifier = ">=1.9" },
+    { name = "mne", specifier = ">=1.10" },
     { name = "numpy", specifier = ">=1.21,<3" },
     { name = "packaging" },
     { name = "pooch" },
