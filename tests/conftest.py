@@ -3,7 +3,6 @@ from __future__ import annotations
 import inspect
 import logging
 import os
-from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -13,7 +12,7 @@ from mne import set_log_level as set_log_level_mne
 from mne.io import read_raw_fif
 
 from mne_lsl.datasets import testing
-from mne_lsl.lsl import StreamInlet, StreamOutlet
+from mne_lsl.lsl import StreamInlet, StreamOutlet, set_config_content
 from mne_lsl.utils._checks import check_verbose
 from mne_lsl.utils.logs import logger
 
@@ -23,12 +22,6 @@ if TYPE_CHECKING:
 
     from mne.io import BaseRaw
 
-# Set debug logging in LSL, e.g.:
-# 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         udp_server.cpp:88       2| P_test_stream_add_reference_channels[1s]: Started multicast udp server at ff05:113d:6fdd:2c17:a643:ffe2:1bd1:3cd2 port 16571 (addr 0x43f93a0)  # noqa: E501
-# 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         tcp_server.cpp:160      1| Created IPv4 TCP acceptor for P_test_stream_add_reference_channels[1s] @ port 16572  # noqa: E501
-# 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         tcp_server.cpp:171      1| Created IPv6 TCP acceptor for P_test_stream_add_reference_channels[1s] @ port 16578  # noqa: E501
-# 2023-10-20 09:38:21.648 (   9.665s) [IO_P_test_stre  ]         udp_server.cpp:136      3| 0x43e9310 query matches, replying to port 16574  # noqa: E501
-lsl_cfg = NamedTemporaryFile("w", prefix="lsl", suffix=".cfg", delete=False)
 if "LSLAPICFG" not in os.environ:
     verbose = get_config("MNE_LSL_LOG_LEVEL", default=2)
     try:
@@ -36,7 +29,7 @@ if "LSLAPICFG" not in os.environ:
     except ValueError:
         pass
     verbose = check_verbose(verbose)
-    # LSL logs use '-2- for errors, -1 for warnings, 0 for information and then
+    # LSL logs use '-2' for errors, -1 for warnings, 0 for information and then
     # 1-9 for increasingly less important details.
     if logging.ERROR <= verbose:
         level = -2
@@ -46,9 +39,9 @@ if "LSLAPICFG" not in os.environ:
         level = 0
     else:
         level = 2
-    with lsl_cfg as fid:
-        fid.write(f"[log]\nlevel = {level}\n\n[multicast]\nResolveScope = link")
-    os.environ["LSLAPICFG"] = lsl_cfg.name
+    # configure liblsl directly instead of through a temporary file and the 'LSLAPICFG'
+    # environment variable (requires liblsl >= 1.17.7).
+    set_config_content(f"[log]\nlevel = {level}\n\n[multicast]\nResolveScope = link")
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -68,8 +61,8 @@ def pytest_configure(config: pytest.Config) -> None:
     ignore:.*interactive_bk.*:matplotlib._api.deprecation.MatplotlibDeprecationWarning
     # Pillow deprecation issued from matplotlib
     ignore:'mode' parameter is deprecated.*:DeprecationWarning
-    # tkinter
-    ignore:Exception ignored in.*__del__.*:pytest.PytestUnraisableExceptionWarning
+    # tkinter; Python 3.14 reworded to 'while calling deallocator'
+    ignore:Exception ignored.*__del__.*:pytest.PytestUnraisableExceptionWarning
     # NumPy deprecation hitting MNE-Python: github.com/mne-tools/mne-python/pull/13585
     ignore:Setting the shape on a NumPy array has been deprecated.*:DeprecationWarning
     """
@@ -79,14 +72,6 @@ def pytest_configure(config: pytest.Config) -> None:
             config.addinivalue_line("filterwarnings", warning_line)
     set_log_level_mne("WARNING")  # MNE logger
     logger.propagate = True
-
-
-def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
-    """Clean up the pytest session."""
-    try:
-        os.unlink(lsl_cfg.name)
-    except Exception:
-        pass
 
 
 def _closer() -> None:

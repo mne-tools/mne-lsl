@@ -226,6 +226,15 @@ def _set_types(lib: CDLL) -> None:
             "[LIBLSL] Continuous resolver functions not available in your LIBLSL "
             "version."
         )
+    try:  # requires liblsl >= 1.17.7
+        lib.lsl_set_config_filename.argtypes = [c_char_p]
+        lib.lsl_set_config_filename.restype = None
+        lib.lsl_set_config_content.argtypes = [c_char_p]
+        lib.lsl_set_config_content.restype = None
+    except Exception:  # pragma: no cover
+        logger.info(
+            "[LIBLSL] Configuration functions not available in your LIBLSL version."
+        )
 
 
 # load library

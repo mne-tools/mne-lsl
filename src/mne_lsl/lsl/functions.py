@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 from ctypes import byref, c_char_p, c_double, c_void_p
+from typing import TYPE_CHECKING
 
-from ..utils._checks import check_type, ensure_int
+from ..utils._checks import check_type, ensure_int, ensure_path
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def library_version() -> int:
@@ -47,6 +51,63 @@ def local_clock() -> float:
         Local timestamp in seconds.
     """
     return lib.lsl_local_clock()
+
+
+def set_config_filename(filename: str | Path) -> None:
+    """Set a custom configuration file for liblsl.
+
+    Override the file from which liblsl loads its configuration. By default, liblsl
+    looks for a configuration file in the current working directory, in the home
+    directory, and in the system-wide configuration directory (see Network Connectivity
+    in the LSL wiki).
+
+    Parameters
+    ----------
+    filename : str | Path
+        Path to the configuration file to load.
+
+    Notes
+    -----
+    This function must be called before any other liblsl operation, e.g. before creating
+    a :class:`~mne_lsl.lsl.StreamInfo`, :class:`~mne_lsl.lsl.StreamInlet` or
+    :class:`~mne_lsl.lsl.StreamOutlet`, as the configuration is loaded once on the first
+    call requiring it. It requires ``liblsl >= 1.17.7``.
+    """
+    filename = ensure_path(filename, must_exist=True)
+    if not hasattr(lib, "lsl_set_config_filename"):
+        raise NotImplementedError(
+            "The function 'set_config_filename' requires liblsl >= 1.17.7, while "
+            f"version {library_version()} is loaded."
+        )
+    lib.lsl_set_config_filename(c_char_p(str.encode(str(filename))))
+
+
+def set_config_content(content: str) -> None:
+    """Set the liblsl configuration from an in-memory string.
+
+    Provide the configuration content directly as a string, e.g. for platforms where
+    configuration files or environment variables are not convenient (see Network
+    Connectivity in the LSL wiki).
+
+    Parameters
+    ----------
+    content : str
+        Content of the configuration, in the same format as a configuration file.
+
+    Notes
+    -----
+    This function must be called before any other liblsl operation, e.g. before creating
+    a :class:`~mne_lsl.lsl.StreamInfo`, :class:`~mne_lsl.lsl.StreamInlet` or
+    :class:`~mne_lsl.lsl.StreamOutlet`, as the configuration is loaded once on the first
+    call requiring it. It requires ``liblsl >= 1.17.7``.
+    """
+    check_type(content, (str,), "content")
+    if not hasattr(lib, "lsl_set_config_content"):
+        raise NotImplementedError(
+            "The function 'set_config_content' requires liblsl >= 1.17.7, while "
+            f"version {library_version()} is loaded."
+        )
+    lib.lsl_set_config_content(c_char_p(str.encode(content)))
 
 
 def resolve_streams(

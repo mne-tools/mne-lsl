@@ -199,12 +199,16 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             If ``None`` (default), the acquisition date, ``info['meas_date']``,
             will be set to ``January 1ˢᵗ, 2000``. This parameter is ignored if
             ``info['meas_date']`` is ``None`` (i.e., no acquisition date has been set).
-        keep_his : bool
-            If ``True``, ``his_id`` of ``subject_info`` will **not** be overwritten.
-            Defaults to ``False``.
+        keep_his : bool | "his_id" | "sex" | "hand" | sequence of {"his_id", "sex", "hand"}
+            If ``True``, ``his_id``, ``sex``, and ``hand`` of ``subject_info`` will **not** be
+            overwritten. If ``False``, these fields will be anonymized. If ``"his_id"``,
+            ``"sex"``, or ``"hand"`` (or any combination thereof in a sequence), only those
+            fields will **not** be anonymized. Defaults to ``False``.
 
-            .. warning:: This could mean that ``info`` is not fully
-                         anonymized. Use with caution.
+            .. warning:: Setting ``keep_his`` to anything other than ``False`` may result in
+                         ``info`` not being fully anonymized. Use with caution.
+            .. versionchanged:: MNE  1.12
+               Added support for sequence of ``str``.
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
@@ -225,8 +229,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         - meas_date, file_id, meas_id
                 A default value, or as specified by ``daysback``.
         - subject_info
-                Default values, except for 'birthday' which is adjusted
-                to maintain the subject age.
+                Default values, except for 'birthday', which is adjusted to maintain the subject
+                age. If ``keep_his`` is not ``False``, then the fields 'his_id', 'sex', and
+                'hand' are not anonymized, depending on the value of ``keep_his``.
         - experimenter, proj_name, description
                 Default strings.
         - utc_offset
@@ -377,9 +382,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
             string values ``'all'`` to pick all channels, or ``'data'`` to pick
-            :term:`data channels`. None (default) will pick all channels. Note that
-            channels in ``info['bads']`` *will be included* if their names or indices
-            are explicitly provided.
+            :term:`data channels`. None (default) will pick all channels. Bad channels
+            are included by default. Note that channels in ``info['bads']`` *will be
+            included* if their names or indices are explicitly provided.
         iir_params : dict | None
             Dictionary of parameters to use for IIR filtering. If None, a 4th order
             Butterworth will be used. For more information, see
@@ -422,9 +427,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
             string values ``'all'`` to pick all channels, or ``'data'`` to pick
-            :term:`data channels`. None (default) will pick all channels. Note that
-            channels in ``info['bads']`` *will be included* if their names or indices
-            are explicitly provided.
+            :term:`data channels`. None (default) will pick all channels. Bad channels
+            are included by default. Note that channels in ``info['bads']`` *will be
+            included* if their names or indices are explicitly provided.
         unique : bool
             Whether to return only unique channel types. Default is ``False``.
         only_data_chs : bool
@@ -452,9 +457,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
             string values ``'all'`` to pick all channels, or ``'data'`` to pick
-            :term:`data channels`. None (default) will pick all channels. Note that
-            channels in ``info['bads']`` *will be included* if their names or indices
-            are explicitly provided.
+            :term:`data channels`. None (default) will pick all channels. Bad channels
+            are included by default. Note that channels in ``info['bads']`` *will be
+            included* if their names or indices are explicitly provided.
         only_data_chs : bool
             Whether to ignore non-data channels. Default is ``False``.
 
@@ -491,9 +496,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
             string values ``'all'`` to pick all channels, or ``'data'`` to pick
-            :term:`data channels`. None (default) will pick all channels. Note that
-            channels in ``info['bads']`` *will be included* if their names or indices
-            are explicitly provided.
+            :term:`data channels`. None (default) will pick all channels. Bad channels
+            are included by default. Note that channels in ``info['bads']`` *will be
+            included* if their names or indices are explicitly provided.
         exclude : str | list of str | tuple of str
             Set of channels to exclude, only used when picking based on types (e.g.,
             ``exclude="bads"`` when ``picks="meg"``) or when picking is set to ``None``.
@@ -555,9 +560,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
             string values ``'all'`` to pick all channels, or ``'data'`` to pick
-            :term:`data channels`. None (default) will pick all channels. Note that
-            channels in ``info['bads']`` *will be included* if their names or indices
-            are explicitly provided.
+            :term:`data channels`. None (default) will pick all channels. Bad channels
+            are included by default. Note that channels in ``info['bads']`` *will be
+            included* if their names or indices are explicitly provided.
         notch_widths : float | None
             Width of the stop band in Hz. If ``None``, ``freqs / 200`` is used.
         trans_bandwidth : float

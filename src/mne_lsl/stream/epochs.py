@@ -9,12 +9,11 @@ from typing import TYPE_CHECKING
 import numpy as np
 from mne import pick_info
 from mne._fiff.pick import _picks_to_idx, channel_indices_by_type
-from mne.event import _find_unique_events
+from mne.event import _find_events, _find_unique_events
 from scipy.signal import detrend
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import fill_doc
-from ..utils._fixes import find_events
 from ..utils._time import high_precision_sleep
 from ..utils.logs import logger, warn
 from .base import BaseStream
@@ -906,7 +905,7 @@ def _find_events_in_stim_channels(
     min_samples = min_duration * sfreq
     events_list = []
     for d, ch_name in zip(data, event_channels, strict=True):
-        events = find_events(
+        events = _find_events(
             d[np.newaxis, :],
             first_samp=0,
             verbose="CRITICAL",  # disable MNE's logging

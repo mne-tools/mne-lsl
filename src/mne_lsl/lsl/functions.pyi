@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from ..utils._checks import check_type as check_type
 from ..utils._checks import ensure_int as ensure_int
+from ..utils._checks import ensure_path as ensure_path
 from .load_liblsl import lib as lib
 from .stream_info import _BaseStreamInfo as _BaseStreamInfo
 
@@ -37,6 +40,47 @@ def local_clock() -> float:
     -------
     time : int
         Local timestamp in seconds.
+    """
+
+def set_config_filename(filename: str | Path) -> None:
+    """Set a custom configuration file for liblsl.
+
+    Override the file from which liblsl loads its configuration. By default, liblsl
+    looks for a configuration file in the current working directory, in the home
+    directory, and in the system-wide configuration directory (see Network Connectivity
+    in the LSL wiki).
+
+    Parameters
+    ----------
+    filename : str | Path
+        Path to the configuration file to load.
+
+    Notes
+    -----
+    This function must be called before any other liblsl operation, e.g. before creating
+    a :class:`~mne_lsl.lsl.StreamInfo`, :class:`~mne_lsl.lsl.StreamInlet` or
+    :class:`~mne_lsl.lsl.StreamOutlet`, as the configuration is loaded once on the first
+    call requiring it. It requires ``liblsl >= 1.17.7``.
+    """
+
+def set_config_content(content: str) -> None:
+    """Set the liblsl configuration from an in-memory string.
+
+    Provide the configuration content directly as a string, e.g. for platforms where
+    configuration files or environment variables are not convenient (see Network
+    Connectivity in the LSL wiki).
+
+    Parameters
+    ----------
+    content : str
+        Content of the configuration, in the same format as a configuration file.
+
+    Notes
+    -----
+    This function must be called before any other liblsl operation, e.g. before creating
+    a :class:`~mne_lsl.lsl.StreamInfo`, :class:`~mne_lsl.lsl.StreamInlet` or
+    :class:`~mne_lsl.lsl.StreamOutlet`, as the configuration is loaded once on the first
+    call requiring it. It requires ``liblsl >= 1.17.7``.
     """
 
 def resolve_streams(

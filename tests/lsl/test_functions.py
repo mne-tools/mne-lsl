@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -13,6 +14,9 @@ from mne_lsl.lsl import (
     resolve_streams,
 )
 from mne_lsl.lsl.load_liblsl import _VERSION_MIN, _VERSION_PROTOCOL
+
+if TYPE_CHECKING:
+    pass
 
 
 def test_library_version() -> None:

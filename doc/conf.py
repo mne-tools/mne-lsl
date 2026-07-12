@@ -173,6 +173,8 @@ numpydoc_xref_aliases = {
     "TextIO": "io.TextIOBase",
 }
 numpydoc_xref_ignore = {
+    "as",
+    "data",
     "hex",
     "instance",
     "length",
@@ -182,7 +184,9 @@ numpydoc_xref_ignore = {
     "n_picks",
     "n_samples",
     "of",
+    "same",
     "shape",
+    "the",
 }
 
 # validation
