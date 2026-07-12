@@ -46,7 +46,7 @@ class PlayerLSL(BasePlayer):
         created only if the :class:`~mne.io.Raw` object has :class:`~mne.Annotations` to
         push. See notes for additional information on the :class:`~mne.Annotations`
         timestamps.
-    annotations_encoding : ``'one-hot'`` | ``'string'``
+    annotations_encoding : {'one-hot', 'string'}
         Encoding format for the annotations stream. ``'one-hot'`` (default) creates one
         ``float64`` channel per unique :class:`~mne.Annotations` description; the value
         on each channel is the annotation duration (``-1`` when the duration is ``0``).
