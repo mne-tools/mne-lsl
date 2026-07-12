@@ -265,15 +265,17 @@ def test_inlet_methods(
 
 @pytest.mark.parametrize(
     ("dtype_str", "flags"),
-    product(
-        ("float32", "int16"),
-        (
-            ["clocksync"],
-            ["clocksync", "dejitter"],
-            ["clocksync", "dejitter", "monotize"],
-            ["clocksync", "dejitter", "monotize", "threadsafe"],
-            "all",
-        ),
+    list(
+        product(
+            ("float32", "int16"),
+            (
+                ["clocksync"],
+                ["clocksync", "dejitter"],
+                ["clocksync", "dejitter", "monotize"],
+                ["clocksync", "dejitter", "monotize", "threadsafe"],
+                "all",
+            ),
+        )
     ),
 )
 def test_processing_flags(dtype_str: str, flags, close_io: Callable[[], None]) -> None:
