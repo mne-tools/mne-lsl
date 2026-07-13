@@ -14,8 +14,9 @@
 
 .. include:: ./authors.inc
 
-Version 1.14
+.. _latest:
+
+Version 1.15
 ============
 
-- Add alternative to stream annotations on a single string typed channel (:pr:`554` by `Alin G. Chitu`_)
-- Add support for recording a :class:`~mne_lsl.stream.StreamLSL` to disk with :meth:`~mne_lsl.stream.StreamLSL.start_record` and :meth:`~mne_lsl.stream.StreamLSL.stop_record` (:pr:`562` by `Mathieu Scheltienne`_)
+- xxx
