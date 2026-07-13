@@ -32,7 +32,7 @@ style = [
   'yamllint',
 ]
 test = [
-  'pylabrecorder',
+  'pylabrecorder>=0.3.0',
   'pytest-cov',
   'pytest-randomly',
   'pytest-timeout',
@@ -95,7 +95,7 @@ readme = 'README.md'
 requires-python = '>=3.11'
 
 [project.optional-dependencies]
-record = ['pylabrecorder', 'pyxdf']
+record = ['pylabrecorder>=0.3.0', 'pyxdf>=1.17.4']
 
 [project.scripts]
 mne-lsl = 'mne_lsl._commands.main:run'

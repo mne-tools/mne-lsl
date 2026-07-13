@@ -1308,9 +1308,9 @@ requires-dist = [
     { name = "packaging" },
     { name = "pooch" },
     { name = "psutil" },
-    { name = "pylabrecorder", marker = "extra == 'record'" },
+    { name = "pylabrecorder", marker = "extra == 'record'", specifier = ">=0.3.0" },
     { name = "pyqtgraph" },
-    { name = "pyxdf", marker = "extra == 'record'" },
+    { name = "pyxdf", marker = "extra == 'record'", specifier = ">=1.17.4" },
     { name = "qtpy" },
     { name = "scipy" },
 ]
@@ -1349,7 +1349,7 @@ style = [
     { name = "yamllint" },
 ]
 test = [
-    { name = "pylabrecorder" },
+    { name = "pylabrecorder", specifier = ">=0.3.0" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-cov" },
     { name = "pytest-randomly" },
