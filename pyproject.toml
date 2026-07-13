@@ -1,6 +1,6 @@
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['setuptools >= 64.0.0', 'setuptools_scm>=8']
+requires = ['cmake>=3.28', 'setuptools >= 64.0.0', 'setuptools_scm>=8']
 
 [dependency-groups]
 doc = [
