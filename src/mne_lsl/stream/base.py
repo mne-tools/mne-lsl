@@ -25,6 +25,7 @@ from ._hpi import check_hpi_ch_names, create_hpi_callback_megin
 if TYPE_CHECKING:
     from collections.abc import Callable
     from datetime import datetime
+    from pathlib import Path
     from typing import Any
 
     from mne import Info
@@ -887,10 +888,40 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._pick(picks)
         return self
 
-    def record(self):  # pragma: no cover
-        """Record the stream data to disk. Not implemented."""
-        self._check_connected("record()")
-        raise NotImplementedError
+    @abstractmethod
+    @fill_doc
+    def start_record(
+        self, fname: str | Path, *, overwrite: bool = False, timeout: float = 10
+    ) -> BaseStream:  # pragma: no cover
+        """Start recording the stream to disk.
+
+        The recording is performed in the background. The stream is captured as it is
+        emitted on the network, i.e. the channel selection, referencing and filtering
+        applied to the stream object are not reflected in the recording.
+
+        Parameters
+        ----------
+        fname : path-like
+            Path to the output file. The file format is inferred from the extension.
+        %(overwrite)s
+        timeout : float
+            Maximum duration in seconds to wait for the recording to start.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
+
+    @abstractmethod
+    def stop_record(self) -> BaseStream:  # pragma: no cover
+        """Stop the recording started with the ``start_record`` method.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
 
     @verbose
     @fill_doc

@@ -10,13 +10,15 @@ from scipy.signal import sosfilt
 
 from ..lsl import StreamInlet, resolve_streams
 from ..lsl.constants import fmt2numpy
-from ..utils._checks import check_type
+from ..utils._checks import check_type, ensure_path
 from ..utils._docs import copy_doc, fill_doc
-from ..utils.logs import logger
+from ..utils._imports import import_optional_dependency
+from ..utils.logs import logger, warn
 from .base import BaseStream
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from pathlib import Path
 
     from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
@@ -58,6 +60,11 @@ class StreamLSL(BaseStream):
         self._name = name
         self._stype = stype
         self._source_id = source_id
+        # recording state, deliberately kept out of '_reset_variables' so that a
+        # transient acquisition error does not orphan a running LabRecorder subprocess.
+        self._recorder = None
+        self._record_fname = None
+        self._record_fmt = None
         self._reset_variables()
 
     @copy_doc(BaseStream.__repr__)
@@ -226,6 +233,18 @@ class StreamLSL(BaseStream):
         stream : instance of :class:`~mne_lsl.stream.StreamLSL`
             The stream instance modified in-place.
         """
+        if getattr(self, "_recorder", None) is not None:
+            try:
+                self.stop_record()
+            except Exception as error:  # pragma: no cover
+                warn(
+                    "The recording could not be stopped cleanly during disconnection: "
+                    f"{error}"
+                )
+            finally:
+                self._recorder = None
+                self._record_fname = None
+                self._record_fmt = None
         super().disconnect()
         logger.debug("Calling inlet.close_stream() for %s", str(self))
         try:
@@ -234,6 +253,126 @@ class StreamLSL(BaseStream):
             pass
         self._reset_variables()  # also sets self._inlet = None
         return self
+
+    @fill_doc
+    def start_record(
+        self, fname: str | Path, *, overwrite: bool = False, timeout: float = 10
+    ) -> StreamLSL:
+        """Start recording the LSL stream to disk.
+
+        The recording is performed in the background by `LabRecorder
+        <https://github.com/labstreaminglayer/App-LabRecorder>`_, bundled through the
+        optional dependency ``pylabrecorder``. The stream is captured as it is emitted
+        on the network, i.e. the channel selection, referencing and filtering applied to
+        the :class:`~mne_lsl.stream.StreamLSL` object are not reflected in the
+        recording.
+
+        Parameters
+        ----------
+        fname : path-like
+            Path to the output ``.xdf`` file. The file format is inferred from the
+            extension; only the ``.xdf`` format is currently supported.
+        %(overwrite)s
+        timeout : float
+            Maximum duration in seconds to wait for the recording to start.
+
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+
+        Notes
+        -----
+        Recording requires the optional dependency ``pylabrecorder``, which is not
+        available on ``conda-forge``. It can be installed with
+        ``pip install mne-lsl[record]``.
+        """
+        if self._recorder is not None:
+            raise RuntimeError(
+                "A recording is already in progress. Use StreamLSL.stop_record() to "
+                "stop it before starting a new one."
+            )
+        self._check_connected("start_record()")
+        fname, fmt = self._prepare_record(fname, overwrite)
+        check_type(timeout, ("numeric",), "timeout")
+        if fmt == "fif":
+            raise NotImplementedError(
+                "Recording to the FIFF format is not yet supported. Please provide a "
+                "path with a '.xdf' extension."
+            )
+        pylabrecorder = import_optional_dependency(
+            "pylabrecorder",
+            extra="Recording an LSL stream to disk requires 'pylabrecorder'.",
+            conda=False,
+        )
+        # build a predicate uniquely identifying the connected stream, dropping empty
+        # values as the LSL resolver matches on exact equality.
+        stream = {
+            "name": self._sinfo.name,
+            "type": self._sinfo.stype,
+            "source_id": self._sinfo.source_id,
+        }
+        stream = {key: value for key, value in stream.items() if value}
+        recorder = pylabrecorder.LabRecorder()
+        recorder.start(fname, streams=[stream], overwrite=overwrite, timeout=timeout)
+        self._recorder = recorder
+        self._record_fname = fname
+        self._record_fmt = fmt
+        return self
+
+    def stop_record(self) -> StreamLSL:
+        """Stop the recording started with :meth:`start_record`.
+
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+        """
+        if self._recorder is None:
+            raise RuntimeError(
+                "No recording is in progress. Use Stream.start_record() to start one."
+            )
+        self._recorder.stop()
+        self._recorder = None
+        self._record_fname = None
+        self._record_fmt = None
+        return self
+
+    def _prepare_record(self, fname: str | Path, overwrite: bool) -> tuple[Path, str]:
+        """Validate the recording arguments and infer the output file format.
+
+        Parameters
+        ----------
+        fname : str | Path
+            The path where the file is recorded.
+        overwrite : bool
+            If ``True``, overwrites a file at the destination.
+
+        Returns
+        -------
+        fname : Path
+            The validated path where the file is recorded.
+        fmt : str
+            The file format inferred from the extension, either ``"xdf"`` or ``"fif"``.
+        """
+        fname = ensure_path(fname, must_exist=False)
+        check_type(overwrite, (bool,), "overwrite")
+        name = fname.name.lower()
+        if name.endswith(".xdf"):
+            fmt = "xdf"
+        elif name.endswith((".fif", ".fif.gz")):
+            fmt = "fif"
+        else:
+            raise ValueError(
+                "The file format could not be inferred from the extension of the "
+                f"provided path '{fname}'. Supported extensions are '.xdf', '.fif' "
+                "and '.fif.gz'."
+            )
+        if fname.exists() and not overwrite:
+            raise FileExistsError(
+                f"The file '{fname}' already exists and overwrite is set to False."
+            )
+        return fname, fmt
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""

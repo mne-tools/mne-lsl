@@ -84,6 +84,10 @@ n_repeat : int | ``np.inf``
     indefinitely."""
 
 # -- O ---------------------------------------------------------------------------------
+docdict["overwrite"] = """
+overwrite : bool
+    If ``True``, overwrites the destination file if it exists."""
+
 # -- P ---------------------------------------------------------------------------------
 docdict["player_fname"] = """
 fname : path-like | Raw

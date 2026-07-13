@@ -58,6 +58,18 @@ the section below for more details.
             $ MNE_LSL_SKIP_LIBLSL_BUILD=1 pip install git+https://github.com/mne-tools/mne-lsl
 
 
+Recording streams to disk
+-------------------------
+
+Recording an LSL stream to disk with :meth:`~mne_lsl.stream.StreamLSL.start_record`
+requires the optional dependency ``pylabrecorder``, which bundles
+`LabRecorder <labrecorder_>`_. It is only available on `PyPI <project pypi_>`_ (not on
+`conda-forge <project conda_>`_) and can be installed with:
+
+.. code-block:: console
+
+    $ pip install mne-lsl[record]
+
 Different liblsl version
 ------------------------
 

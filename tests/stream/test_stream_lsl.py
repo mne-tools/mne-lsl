@@ -1350,3 +1350,96 @@ def test_manual_acquisition_errors(mock_lsl_stream: DummyPlayer) -> None:
     with pytest.raises(RuntimeError, match="Acquisition is done automatically"):
         stream.acquire()
     stream.disconnect()
+
+
+def test_start_record_not_connected(tmp_path: Path) -> None:
+    """Test that recording requires a connected stream."""
+    stream = Stream(bufsize=2.0, name="not-a-real-stream")
+    with pytest.raises(RuntimeError, match="not connected"):
+        stream.start_record(tmp_path / "recording.xdf")
+
+
+@pytest.mark.slow
+def test_record_validation(mock_lsl_stream: DummyPlayer, tmp_path: Path) -> None:
+    """Test the validation performed before a recording is started."""
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
+    stream.connect(acquisition_delay=0.1)
+    # unsupported extension
+    with pytest.raises(ValueError, match="file format could not be inferred"):
+        stream.start_record(tmp_path / "recording.txt")
+    # the FIFF format is not supported yet
+    with pytest.raises(NotImplementedError, match="FIFF format is not yet supported"):
+        stream.start_record(tmp_path / "recording.fif")
+    # existing file without overwrite
+    existing = tmp_path / "existing.xdf"
+    existing.write_text("not empty")
+    with pytest.raises(FileExistsError, match="already exists"):
+        stream.start_record(existing)
+    # stopping a recording which was never started
+    with pytest.raises(RuntimeError, match="No recording is in progress"):
+        stream.stop_record()
+    stream.disconnect()
+
+
+@pytest.mark.slow
+def test_start_stop_record(mock_lsl_stream: DummyPlayer, tmp_path: Path) -> None:
+    """Test recording an LSL stream to an XDF file."""
+    pytest.importorskip("pylabrecorder")
+    pyxdf = pytest.importorskip("pyxdf")
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
+    stream.connect(acquisition_delay=0.1)
+    fname = tmp_path / "recording.xdf"
+    assert stream.start_record(fname) is stream
+    assert stream._recorder is not None
+    _sleep_until_new_data(0.1, mock_lsl_stream)
+    time.sleep(0.5)
+    assert stream.stop_record() is stream
+    assert stream._recorder is None
+    assert fname.exists()
+    stream.disconnect()
+    # verify the content of the recorded XDF file
+    streams, _ = pyxdf.load_xdf(fname)
+    assert len(streams) == 1
+    assert streams[0]["info"]["name"][0] == mock_lsl_stream.name
+    assert streams[0]["info"]["source_id"][0] == mock_lsl_stream.source_id
+    assert int(streams[0]["info"]["channel_count"][0]) == len(
+        mock_lsl_stream.info["ch_names"]
+    )
+    assert streams[0]["time_series"].shape[0] > 0
+
+
+@pytest.mark.slow
+def test_start_record_already_started(
+    mock_lsl_stream: DummyPlayer, tmp_path: Path
+) -> None:
+    """Test that a second recording can not be started while one is in progress."""
+    pytest.importorskip("pylabrecorder")
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
+    stream.connect(acquisition_delay=0.1)
+    stream.start_record(tmp_path / "recording1.xdf")
+    with pytest.raises(RuntimeError, match="already in progress"):
+        stream.start_record(tmp_path / "recording2.xdf")
+    stream.stop_record()
+    stream.disconnect()
+
+
+@pytest.mark.slow
+def test_disconnect_stops_record(mock_lsl_stream: DummyPlayer, tmp_path: Path) -> None:
+    """Test that disconnecting a stream stops an ongoing recording."""
+    pytest.importorskip("pylabrecorder")
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
+    stream.connect(acquisition_delay=0.1)
+    fname = tmp_path / "recording.xdf"
+    stream.start_record(fname)
+    _sleep_until_new_data(0.1, mock_lsl_stream)
+    stream.disconnect()
+    assert stream._recorder is None
+    assert fname.exists()
