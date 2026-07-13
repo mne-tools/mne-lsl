@@ -1395,8 +1395,7 @@ def test_start_stop_record(mock_lsl_stream: DummyPlayer, tmp_path: Path) -> None
     fname = tmp_path / "recording.xdf"
     assert stream.start_record(fname) is stream
     assert stream._recorder is not None
-    _sleep_until_new_data(0.1, mock_lsl_stream)
-    time.sleep(0.5)
+    _sleep_until_new_data(0.5, mock_lsl_stream)
     assert stream.stop_record() is stream
     assert stream._recorder is None
     assert fname.exists()

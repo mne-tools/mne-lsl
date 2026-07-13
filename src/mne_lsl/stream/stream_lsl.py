@@ -60,11 +60,9 @@ class StreamLSL(BaseStream):
         self._name = name
         self._stype = stype
         self._source_id = source_id
-        # recording state, deliberately kept out of '_reset_variables' so that a
+        # recording handle, deliberately kept out of '_reset_variables' so that a
         # transient acquisition error does not orphan a running LabRecorder subprocess.
         self._recorder = None
-        self._record_fname = None
-        self._record_fmt = None
         self._reset_variables()
 
     @copy_doc(BaseStream.__repr__)
@@ -243,8 +241,6 @@ class StreamLSL(BaseStream):
                 )
             finally:
                 self._recorder = None
-                self._record_fname = None
-                self._record_fmt = None
         super().disconnect()
         logger.debug("Calling inlet.close_stream() for %s", str(self))
         try:
@@ -316,8 +312,6 @@ class StreamLSL(BaseStream):
         recorder = pylabrecorder.LabRecorder()
         recorder.start(fname, streams=[stream], overwrite=overwrite, timeout=timeout)
         self._recorder = recorder
-        self._record_fname = fname
-        self._record_fmt = fmt
         return self
 
     def stop_record(self) -> StreamLSL:
@@ -334,8 +328,6 @@ class StreamLSL(BaseStream):
             )
         self._recorder.stop()
         self._recorder = None
-        self._record_fname = None
-        self._record_fmt = None
         return self
 
     def _prepare_record(self, fname: str | Path, overwrite: bool) -> tuple[Path, str]:
