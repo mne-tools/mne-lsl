@@ -26,8 +26,8 @@ Player with annotations
 .. include:: ./../../links.inc
 
 :class:`~mne.Annotations` from a :class:`~mne.io.Raw` object can be streamed as an event
-stream by :class:`~mne_lsl.player.PlayerLSL`. The stream will be irregularly sampled,
-numerical, and of type ``'annotations'``.
+stream by :class:`~mne_lsl.player.PlayerLSL`. The stream is irregularly sampled and of
+type ``'annotations'``.
 
 A :class:`~mne.Annotations` contain 3 information:
 
@@ -35,19 +35,32 @@ A :class:`~mne.Annotations` contain 3 information:
 - the duration of the annotation
 - the description of the annotation
 
-To stream all 3 information, it's duration-hod encoded along the channels. For instance,
-consider a :class:`~mne.io.Raw` object with 3 different :class:`~mne.Annotations`
-description: ``'event1'``, ``'event2'``, and ``'event3'``. The event stream will have 3
-channels, each corresponding to one of the 3 descriptions. When an annotation is
-streamed, it's duration is encoded as the value on its channel while the other channels
-remain to zero.
+The :class:`~mne_lsl.player.PlayerLSL` supports two encodings for the annotation stream,
+selected with the ``annotations_encoding`` argument.
+
+With the default ``annotations_encoding="one-hot"``, all 3 information are streamed on a
+numerical stream by encoding the duration on a one-hot representation of the description
+along the channels. For instance, consider a :class:`~mne.io.Raw` object with 3
+different :class:`~mne.Annotations` description: ``'event1'``, ``'event2'``, and
+``'event3'``. The event stream will have 3 channels, each corresponding to one of the 3
+descriptions. When an annotation is streamed, its duration is encoded as the value on
+its channel while the other channels remain to zero.
 
 .. note::
 
     Annotation with a duration equal to zero are special cased and yield an encoded
     value of ``-1``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 31-52
+With ``annotations_encoding="string"``, only the description is streamed, on a single
+``'string'``-typed channel named ``'description'``. This is convenient when a file
+contains a large or variable number of unique descriptions, as the number of channels
+no longer depends on the annotations present. The onset is still conveyed through the
+sample timestamp, but the duration is not encoded and therefore lost. A
+``'string'``-typed stream must be received with a :class:`~mne_lsl.lsl.StreamInlet`
+directly, as the :class:`~mne_lsl.stream.StreamLSL` and
+:class:`~mne_lsl.stream.EpochsStream` classes only support numerical streams.
+
+.. GENERATED FROM PYTHON SOURCE LINES 44-66
 
 .. code-block:: Python
 
@@ -62,6 +75,7 @@ remain to zero.
     from mne.io import RawArray
     from mne.viz import set_browser_backend
 
+    from mne_lsl.lsl import StreamInlet, resolve_streams
     from mne_lsl.player import PlayerLSL
     from mne_lsl.stream import StreamLSL
 
@@ -85,7 +99,7 @@ remain to zero.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-68
+.. GENERATED FROM PYTHON SOURCE LINES 68-82
 
 With the 3 annotations above, the event stream will stream the following samples:
 
@@ -102,7 +116,7 @@ same time, then the chunk push is ``array([[0., 0.2., 0.], [0., 0., 0.3]])``, of
 (2, 3).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-75
+.. GENERATED FROM PYTHON SOURCE LINES 84-89
 
 Example on mock signal
 ----------------------
@@ -110,7 +124,7 @@ Example on mock signal
 Let's create a mock :class:`~mne.io.Raw` object with annotations and stream both the
 signal and the annotations.
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-87
+.. GENERATED FROM PYTHON SOURCE LINES 89-101
 
 .. code-block:: Python
 
@@ -138,7 +152,7 @@ signal and the annotations.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-101
+.. GENERATED FROM PYTHON SOURCE LINES 102-115
 
 Now that we have the :class:`~mne.io.Raw` object, we can stream it with a
 :class:`~mne_lsl.player.PlayerLSL` object.
@@ -154,7 +168,7 @@ Now that we have the :class:`~mne.io.Raw` object, we can stream it with a
     A ``chunk_size`` of 1 is needed here or the timestamps ``ts`` from the signal and
     annotations streams are not reliable enough.
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-111
+.. GENERATED FROM PYTHON SOURCE LINES 115-125
 
 .. code-block:: Python
 
@@ -175,11 +189,11 @@ Now that we have the :class:`~mne.io.Raw` object, we can stream it with a
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-113
+.. GENERATED FROM PYTHON SOURCE LINES 126-127
 
 We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` objects.
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-118
+.. GENERATED FROM PYTHON SOURCE LINES 127-132
 
 .. code-block:: Python
 
@@ -343,9 +357,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header general-3f4e76d6-817e-4442-a493-6470d6a290ba"
+    <tr class="mne-repr-section-header general-c82d7102-2745-4008-a21d-e6c1bf6db2bc"
          title="Hide section" 
-        onclick="toggleVisibility('general-3f4e76d6-817e-4442-a493-6470d6a290ba')">
+        onclick="toggleVisibility('general-c82d7102-2745-4008-a21d-e6c1bf6db2bc')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -357,26 +371,26 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
+    <tr class="repr-element general-c82d7102-2745-4008-a21d-e6c1bf6db2bc ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
+    <tr class="repr-element general-c82d7102-2745-4008-a21d-e6c1bf6db2bc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
+    <tr class="repr-element general-c82d7102-2745-4008-a21d-e6c1bf6db2bc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-3f4e76d6-817e-4442-a493-6470d6a290ba ">
+    <tr class="repr-element general-c82d7102-2745-4008-a21d-e6c1bf6db2bc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -391,9 +405,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header acquisition-c6f8b377-fb41-47b2-8b08-b199e71164a3"
+    <tr class="mne-repr-section-header acquisition-165d9284-1b6e-4cdd-95ee-e76c371e0e5a"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-c6f8b377-fb41-47b2-8b08-b199e71164a3')">
+        onclick="toggleVisibility('acquisition-165d9284-1b6e-4cdd-95ee-e76c371e0e5a')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -412,7 +426,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="repr-element acquisition-c6f8b377-fb41-47b2-8b08-b199e71164a3 ">
+    <tr class="repr-element acquisition-165d9284-1b6e-4cdd-95ee-e76c371e0e5a ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>1000.00 Hz</td>
@@ -428,9 +442,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f"
+    <tr class="mne-repr-section-header channels-a9ed2fbd-3916-4e77-b190-f50541a59ca1"
          title="Hide section" 
-        onclick="toggleVisibility('channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f')">
+        onclick="toggleVisibility('channels-a9ed2fbd-3916-4e77-b190-f50541a59ca1')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -443,7 +457,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
     
-    <tr class="repr-element channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f ">
+    <tr class="repr-element channels-a9ed2fbd-3916-4e77-b190-f50541a59ca1 ">
         <td class="mne-repr-section-toggle"></td>
         <td>misc</td>
         <td>
@@ -456,7 +470,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element channels-12bdf4fa-85ff-42e3-add6-8859e33a9d8f ">
+    <tr class="repr-element channels-a9ed2fbd-3916-4e77-b190-f50541a59ca1 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -471,9 +485,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header filters-1febe7c8-57e8-4006-8c77-4685e32369e8"
+    <tr class="mne-repr-section-header filters-ead29f94-7709-434c-999f-ef1e413eed09"
          title="Hide section" 
-        onclick="toggleVisibility('filters-1febe7c8-57e8-4006-8c77-4685e32369e8')">
+        onclick="toggleVisibility('filters-ead29f94-7709-434c-999f-ef1e413eed09')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -485,14 +499,14 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element filters-1febe7c8-57e8-4006-8c77-4685e32369e8 ">
+    <tr class="repr-element filters-ead29f94-7709-434c-999f-ef1e413eed09 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-1febe7c8-57e8-4006-8c77-4685e32369e8 ">
+    <tr class="repr-element filters-ead29f94-7709-434c-999f-ef1e413eed09 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>500.00 Hz</td>
@@ -504,7 +518,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-124
+.. GENERATED FROM PYTHON SOURCE LINES 133-138
 
 .. code-block:: Python
 
@@ -668,9 +682,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header general-556c55aa-d150-4e12-b77e-c3015c6618e6"
+    <tr class="mne-repr-section-header general-119b6cff-5d97-4724-a8b5-1066813dcc3d"
          title="Hide section" 
-        onclick="toggleVisibility('general-556c55aa-d150-4e12-b77e-c3015c6618e6')">
+        onclick="toggleVisibility('general-119b6cff-5d97-4724-a8b5-1066813dcc3d')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -682,26 +696,26 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
+    <tr class="repr-element general-119b6cff-5d97-4724-a8b5-1066813dcc3d ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
+    <tr class="repr-element general-119b6cff-5d97-4724-a8b5-1066813dcc3d ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
+    <tr class="repr-element general-119b6cff-5d97-4724-a8b5-1066813dcc3d ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-556c55aa-d150-4e12-b77e-c3015c6618e6 ">
+    <tr class="repr-element general-119b6cff-5d97-4724-a8b5-1066813dcc3d ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -716,9 +730,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header acquisition-3820504a-4fc6-4413-9cee-1b0d2e9daaf0"
+    <tr class="mne-repr-section-header acquisition-6792877f-5313-495c-adcc-979e54228f2b"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-3820504a-4fc6-4413-9cee-1b0d2e9daaf0')">
+        onclick="toggleVisibility('acquisition-6792877f-5313-495c-adcc-979e54228f2b')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -737,7 +751,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="repr-element acquisition-3820504a-4fc6-4413-9cee-1b0d2e9daaf0 ">
+    <tr class="repr-element acquisition-6792877f-5313-495c-adcc-979e54228f2b ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>0.00 Hz</td>
@@ -753,9 +767,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header channels-fe61deab-1d62-4882-947d-3aa992e348a0"
+    <tr class="mne-repr-section-header channels-161e5ca8-3db9-4686-a505-35b1133f6821"
          title="Hide section" 
-        onclick="toggleVisibility('channels-fe61deab-1d62-4882-947d-3aa992e348a0')">
+        onclick="toggleVisibility('channels-161e5ca8-3db9-4686-a505-35b1133f6821')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -768,7 +782,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
     
-    <tr class="repr-element channels-fe61deab-1d62-4882-947d-3aa992e348a0 ">
+    <tr class="repr-element channels-161e5ca8-3db9-4686-a505-35b1133f6821 ">
         <td class="mne-repr-section-toggle"></td>
         <td>misc</td>
         <td>
@@ -781,7 +795,7 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element channels-fe61deab-1d62-4882-947d-3aa992e348a0 ">
+    <tr class="repr-element channels-161e5ca8-3db9-4686-a505-35b1133f6821 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -796,9 +810,9 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
 
 
 
-    <tr class="mne-repr-section-header filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7"
+    <tr class="mne-repr-section-header filters-453190a1-7a66-4b83-89ac-85c1a49c24ce"
          title="Hide section" 
-        onclick="toggleVisibility('filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7')">
+        onclick="toggleVisibility('filters-453190a1-7a66-4b83-89ac-85c1a49c24ce')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -810,14 +824,14 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     </tr>
 
 
-    <tr class="repr-element filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7 ">
+    <tr class="repr-element filters-453190a1-7a66-4b83-89ac-85c1a49c24ce ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-917ee51e-eae5-4ef5-8f67-8f810b1b70c7 ">
+    <tr class="repr-element filters-453190a1-7a66-4b83-89ac-85c1a49c24ce ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>0.00 Hz</td>
@@ -829,12 +843,12 @@ We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` object
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-127
+.. GENERATED FROM PYTHON SOURCE LINES 139-141
 
 We can now acquire new samples from both streams and create a matplotlib figure to
 plot the signal and the annotations in real-time.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-166
+.. GENERATED FROM PYTHON SOURCE LINES 141-180
 
 .. code-block:: Python
 
@@ -889,7 +903,7 @@ plot the signal and the annotations in real-time.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-174
+.. GENERATED FROM PYTHON SOURCE LINES 181-188
 
 Free resources
 --------------
@@ -899,7 +913,7 @@ When you are done with a :class:`~mne_lsl.player.PlayerLSL`, a
 forget to free the resources they use to continuously mock an LSL stream or
 receive new data from an LSL stream.
 
-.. GENERATED FROM PYTHON SOURCE LINES 174-177
+.. GENERATED FROM PYTHON SOURCE LINES 188-191
 
 .. code-block:: Python
 
@@ -915,11 +929,11 @@ receive new data from an LSL stream.
  .. code-block:: none
 
 
-    <Stream: OFF | tutorial-annots (source: 9c2ee072cc634f78b0abc8490be7b98b)>
+    <Stream: OFF | tutorial-annots (source: 095911768c7c4a27ae6f27365e70e2ac)>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-181
+.. GENERATED FROM PYTHON SOURCE LINES 192-195
 
 .. code-block:: Python
 
@@ -935,16 +949,17 @@ receive new data from an LSL stream.
  .. code-block:: none
 
 
-    <Stream: OFF | tutorial-annots-annotations (source: 9c2ee072cc634f78b0abc8490be7b98b)>
+    <Stream: OFF | tutorial-annots-annotations (source: 095911768c7c4a27ae6f27365e70e2ac)>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-184
+.. GENERATED FROM PYTHON SOURCE LINES 196-199
 
 .. code-block:: Python
 
 
     player.stop()
+
 
 
 
@@ -958,12 +973,131 @@ receive new data from an LSL stream.
 
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 200-208
+
+Streaming annotations as strings
+--------------------------------
+
+The one-hot encoding above conveys the onset, duration and description, but it creates
+one channel per unique description. With many unique descriptions, e.g. a file with
+hundreds of distinct markers, this yields a large and file-dependent number of
+channels. If the duration is not needed, ``annotations_encoding="string"`` streams the
+descriptions on a single ``'string'``-typed channel named ``'description'`` instead.
+
+.. GENERATED FROM PYTHON SOURCE LINES 208-218
+
+.. code-block:: Python
+
+
+    source_id = uuid.uuid4().hex
+    player = PlayerLSL(
+        raw,
+        chunk_size=1,
+        name="tutorial-annots-str",
+        source_id=source_id,
+        annotations_encoding="string",
+    ).start()
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 219-223
+
+A ``'string'``-typed stream can not be received with a
+:class:`~mne_lsl.stream.StreamLSL`, which only supports numerical streams. We resolve
+the annotation stream and connect to it with a :class:`~mne_lsl.lsl.StreamInlet`
+instead.
+
+.. GENERATED FROM PYTHON SOURCE LINES 223-232
+
+.. code-block:: Python
+
+
+    sinfo = [
+        stream
+        for stream in resolve_streams(timeout=2)
+        if stream.stype == "annotations" and stream.source_id == source_id
+    ][0]
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream(timeout=5)
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 233-235
+
+Each pulled sample is a list with a single element: the annotation description. The
+associated timestamp still encodes the onset, while the duration is lost.
+
+.. GENERATED FROM PYTHON SOURCE LINES 235-244
+
+.. code-block:: Python
+
+
+    descriptions = []
+    for _ in range(20):
+        data, ts = inlet.pull_chunk(timeout=1)
+        descriptions.extend(sample[0] for sample in data)
+        if 4 <= len(descriptions):
+            break
+    descriptions
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    ['1', '2', '1', '2']
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 245-250
+
+Free resources.
+
+Similarly, when you are done with a :class:`~mne_lsl.lsl.StreamInlet`, don't forget to
+free the resources they use to continuously mock an LSL stream or receive new data
+from an LSL stream.
+
+.. GENERATED FROM PYTHON SOURCE LINES 250-254
+
+.. code-block:: Python
+
+
+    inlet.close_stream()
+    del inlet
+    player.stop()
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    <Player: tutorial-annots-str | OFF>
+
+
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 9.675 seconds)
+   **Total running time of the script:** (0 minutes 14.505 seconds)
 
-**Estimated memory usage:**  199 MB
+**Estimated memory usage:**  197 MB
 
 
 .. _sphx_glr_download_generated_tutorials_20_player_annotations.py:

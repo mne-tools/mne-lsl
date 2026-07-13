@@ -9,6 +9,10 @@ This page contains detailed tutorials using ``MNE-LSL``, presenting the differen
 objects and their features.
 
 
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
 
 .. raw:: html
 
@@ -52,7 +56,7 @@ objects and their features.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Annotations from a Raw object can be streamed as an event stream by PlayerLSL. The stream will be irregularly sampled, numerical, and of type &#x27;annotations&#x27;.">
+    <div class="sphx-glr-thumbcontainer" tooltip="Annotations from a Raw object can be streamed as an event stream by PlayerLSL. The stream is irregularly sampled and of type &#x27;annotations&#x27;.">
 
 .. only:: html
 

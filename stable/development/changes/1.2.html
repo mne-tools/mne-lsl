@@ -11,7 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -232,6 +232,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="1.14.html">Version 1.14</a></li>
 <li class="toctree-l2"><a class="reference internal" href="1.13.html">Version 1.13.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="1.13.html#version-1-13-0">Version 1.13.0</a></li>
@@ -300,7 +301,7 @@
 <li><p>Add argument <code class="docutils literal notranslate"><span class="pre">annotations</span></code> to <a class="reference internal" href="../../generated/api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> to stream annotations on a separate <a class="reference internal" href="../../generated/api/mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/202">#202</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
 <li><p>Add support for a <a class="reference external" href="https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw" title="(in MNE v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raw</span></code></a> object as direct input to a <a class="reference internal" href="../../generated/api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/202">#202</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
 <li><p>Improve deletion of <a class="reference internal" href="../../generated/api/mne_lsl.lsl.StreamInlet.html#mne_lsl.lsl.StreamInlet" title="mne_lsl.lsl.StreamInlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamInlet</span></code></a> and <a class="reference internal" href="../../generated/api/mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> in <a class="reference internal" href="../../generated/api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> and <a class="reference internal" href="../../generated/api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL" title="mne_lsl.stream.StreamLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamLSL</span></code></a> to avoid stray <a class="reference internal" href="../../generated/api/mne_lsl.lsl.StreamInlet.html#mne_lsl.lsl.StreamInlet" title="mne_lsl.lsl.StreamInlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamInlet</span></code></a> and <a class="reference internal" href="../../generated/api/mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/202">#202</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
-<li><p>Prevent pushing a chunk with <a class="reference internal" href="../../generated/api/mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> and a <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> set to a <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> of zeros (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/202">#202</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
+<li><p>Prevent pushing a chunk with <a class="reference internal" href="../../generated/api/mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> and a <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> set to a <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> of zeros (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/202">#202</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
 <li><p>Improve discovery of existing <code class="docutils literal notranslate"><span class="pre">liblsl</span></code> by looking into the download folder before querying GitHub (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/210">#210</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
 </ul>
 </section>
@@ -360,12 +361,13 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
+</div><script src="../../_static/documentation_options.js?v=01009efc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

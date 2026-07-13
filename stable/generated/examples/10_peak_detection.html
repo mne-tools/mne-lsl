@@ -11,7 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -232,6 +232,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.14.html">Version 1.14</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
@@ -311,7 +312,7 @@ object able to detect new R-peak entering the buffer as fast as possible, with s
 robustness to external noise sources (e.g. movements) and a simple design.</p>
 <img alt="../../_images/qrs.png" class="align-center qrs-img" src="../../_images/qrs.png" />
 <p>First let’s have a look to a sample ECG signal and to how we could detect the R-peak
-reliably with <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="(in SciPy v1.17.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.find_peaks()</span></code></a>.</p>
+reliably with <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="(in SciPy v1.18.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.find_peaks()</span></code></a>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mne.io</span><span class="w"> </span><span class="kn">import</span> <a href="https://mne.tools/stable/generated/mne.io.read_raw_fif.html#mne.io.read_raw_fif" title="mne.io.read_raw_fif" class="sphx-glr-backref-module-mne-io sphx-glr-backref-type-py-function"><span class="n">read_raw_fif</span></a>
@@ -472,9 +473,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header general-e68695f8-2018-4342-86cd-bd82edc5d27d"
+<tr class="mne-repr-section-header general-3a74f195-77d7-4d20-90fb-3a8413516fe1"
      title="Hide section"
-    onclick="toggleVisibility('general-e68695f8-2018-4342-86cd-bd82edc5d27d')">
+    onclick="toggleVisibility('general-3a74f195-77d7-4d20-90fb-3a8413516fe1')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -486,7 +487,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element general-e68695f8-2018-4342-86cd-bd82edc5d27d ">
+<tr class="repr-element general-3a74f195-77d7-4d20-90fb-3a8413516fe1 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Filename(s)</td>
     <td>
@@ -497,26 +498,26 @@ this file apply (plus whatever default styling the IDE applies).
     </td>
 </tr>
 
-<tr class="repr-element general-e68695f8-2018-4342-86cd-bd82edc5d27d ">
+<tr class="repr-element general-3a74f195-77d7-4d20-90fb-3a8413516fe1 ">
     <td class="mne-repr-section-toggle"></td>
     <td>MNE object type</td>
     <td>Raw</td>
 </tr>
-<tr class="repr-element general-e68695f8-2018-4342-86cd-bd82edc5d27d ">
+<tr class="repr-element general-3a74f195-77d7-4d20-90fb-3a8413516fe1 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Measurement date</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-e68695f8-2018-4342-86cd-bd82edc5d27d ">
+<tr class="repr-element general-3a74f195-77d7-4d20-90fb-3a8413516fe1 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Participant</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-e68695f8-2018-4342-86cd-bd82edc5d27d ">
+<tr class="repr-element general-3a74f195-77d7-4d20-90fb-3a8413516fe1 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Experimenter</td>
 
@@ -531,9 +532,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header acquisition-5aa8fbd2-45ff-4475-ae49-3593aaaff68e"
+<tr class="mne-repr-section-header acquisition-d020da09-7992-43b5-8735-2c00d2817b8b"
      title="Hide section"
-    onclick="toggleVisibility('acquisition-5aa8fbd2-45ff-4475-ae49-3593aaaff68e')">
+    onclick="toggleVisibility('acquisition-d020da09-7992-43b5-8735-2c00d2817b8b')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -545,7 +546,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element acquisition-5aa8fbd2-45ff-4475-ae49-3593aaaff68e ">
+<tr class="repr-element acquisition-d020da09-7992-43b5-8735-2c00d2817b8b ">
     <td class="mne-repr-section-toggle"></td>
     <td>Duration</td>
     <td>00:02:25 (HH:MM:SS)</td>
@@ -558,14 +559,14 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element acquisition-5aa8fbd2-45ff-4475-ae49-3593aaaff68e ">
+<tr class="repr-element acquisition-d020da09-7992-43b5-8735-2c00d2817b8b ">
     <td class="mne-repr-section-toggle"></td>
     <td>Sampling frequency</td>
     <td>1024.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element acquisition-5aa8fbd2-45ff-4475-ae49-3593aaaff68e ">
+<tr class="repr-element acquisition-d020da09-7992-43b5-8735-2c00d2817b8b ">
     <td class="mne-repr-section-toggle"></td>
     <td>Time points</td>
     <td>148,477</td>
@@ -580,9 +581,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header channels-e21d61a3-22cb-428f-9e0b-887c535d5e99"
+<tr class="mne-repr-section-header channels-7e048bc8-3260-4f94-ac6f-f0d91ff5c195"
      title="Hide section"
-    onclick="toggleVisibility('channels-e21d61a3-22cb-428f-9e0b-887c535d5e99')">
+    onclick="toggleVisibility('channels-7e048bc8-3260-4f94-ac6f-f0d91ff5c195')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -595,7 +596,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element channels-e21d61a3-22cb-428f-9e0b-887c535d5e99 ">
+<tr class="repr-element channels-7e048bc8-3260-4f94-ac6f-f0d91ff5c195 ">
     <td class="mne-repr-section-toggle"></td>
     <td>misc</td>
     <td>
@@ -608,7 +609,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-e21d61a3-22cb-428f-9e0b-887c535d5e99 ">
+<tr class="repr-element channels-7e048bc8-3260-4f94-ac6f-f0d91ff5c195 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Head & sensor digitization</td>
 
@@ -623,9 +624,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header filters-185379ce-0e53-4137-aa30-e89918dd7145"
+<tr class="mne-repr-section-header filters-fb9ddd71-ea75-4a66-80ff-13df8fd4488a"
      title="Hide section"
-    onclick="toggleVisibility('filters-185379ce-0e53-4137-aa30-e89918dd7145')">
+    onclick="toggleVisibility('filters-fb9ddd71-ea75-4a66-80ff-13df8fd4488a')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -637,14 +638,14 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element filters-185379ce-0e53-4137-aa30-e89918dd7145 ">
+<tr class="repr-element filters-fb9ddd71-ea75-4a66-80ff-13df8fd4488a ">
     <td class="mne-repr-section-toggle"></td>
     <td>Highpass</td>
     <td>0.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element filters-185379ce-0e53-4137-aa30-e89918dd7145 ">
+<tr class="repr-element filters-fb9ddd71-ea75-4a66-80ff-13df8fd4488a ">
     <td class="mne-repr-section-toggle"></td>
     <td>Lowpass</td>
     <td>512.00 Hz</td>
@@ -731,7 +732,7 @@ noise.</p>
 <section id="peak-detection">
 <h2>Peak detection<a class="headerlink" href="#peak-detection" title="Link to this heading">🔗</a></h2>
 <p>Next, let’s detect the R-peaks on the same 5 seconds window of the notched signal with
-<a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="(in SciPy v1.17.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.find_peaks()</span></code></a>.</p>
+<a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="(in SciPy v1.18.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.find_peaks()</span></code></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>We do not need to detrend to find peaks. Detrending was only useful to overlay the
@@ -778,7 +779,7 @@ is horrible. But we can improve it by setting the following constraints:</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.python.org/3/library/time.html#time.sleep" title="time.sleep" class="sphx-glr-backref-module-time sphx-glr-backref-type-py-function"><span class="n">sleep</span></a>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.python.org/3/library/types.html#types.GenericAlias" title="types.GenericAlias" class="sphx-glr-backref-module-types sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.python.org/3/library/typing.html#typing.TypeAliasType" title="typing.TypeAliasType" class="sphx-glr-backref-module-typing sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="scipy.signal.find_peaks" class="sphx-glr-backref-module-scipy-signal sphx-glr-backref-type-py-function"><span class="n">find_peaks</span></a>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">mne_lsl.stream</span><span class="w"> </span><span class="kn">import</span> <a href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL" title="mne_lsl.stream.StreamLSL" class="sphx-glr-backref-module-mne_lsl-stream sphx-glr-backref-type-py-class"><span class="n">StreamLSL</span></a>
@@ -826,7 +827,7 @@ is horrible. But we can improve it by setting the following constraints:</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">notch_filter</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">picks</span><span class="o">=</span><span class="n">ch_name</span><span class="p">)</span>
         <a href="https://docs.python.org/3/library/time.html#time.sleep" title="time.sleep" class="sphx-glr-backref-module-time sphx-glr-backref-type-py-function"><span class="n">sleep</span></a><span class="p">(</span><span class="n">bufsize</span><span class="p">)</span>  <span class="c1"># prefill an entire buffer</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">detect_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <a href="https://docs.python.org/3/library/types.html#types.GenericAlias" title="types.GenericAlias" class="sphx-glr-backref-module-types sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <a href="https://docs.python.org/3/library/typing.html#typing.TypeAliasType" title="typing.TypeAliasType" class="sphx-glr-backref-module-typing sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Detect all peaks in the buffer.</span>
 
 <span class="sd">        Returns</span>
@@ -863,7 +864,7 @@ simplify achieved by storing the LSL time at which the peak was detected.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.python.org/3/library/time.html#time.sleep" title="time.sleep" class="sphx-glr-backref-module-time sphx-glr-backref-type-py-function"><span class="n">sleep</span></a>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.python.org/3/library/types.html#types.GenericAlias" title="types.GenericAlias" class="sphx-glr-backref-module-types sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.python.org/3/library/typing.html#typing.TypeAliasType" title="typing.TypeAliasType" class="sphx-glr-backref-module-typing sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="scipy.signal.find_peaks" class="sphx-glr-backref-module-scipy-signal sphx-glr-backref-type-py-function"><span class="n">find_peaks</span></a>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">mne_lsl.stream</span><span class="w"> </span><span class="kn">import</span> <a href="../api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL" title="mne_lsl.stream.StreamLSL" class="sphx-glr-backref-module-mne_lsl-stream sphx-glr-backref-type-py-class"><span class="n">StreamLSL</span></a>
@@ -914,7 +915,7 @@ simplify achieved by storing the LSL time at which the peak was detected.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">_peak_candidates</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_peak_candidates_count</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">detect_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <a href="https://docs.python.org/3/library/types.html#types.GenericAlias" title="types.GenericAlias" class="sphx-glr-backref-module-types sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <a href="https://docs.python.org/3/library/typing.html#typing.TypeAliasType" title="typing.TypeAliasType" class="sphx-glr-backref-module-typing sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Detect all peaks in the buffer.</span>
 
 <span class="sd">        Returns</span>
@@ -1047,8 +1048,8 @@ start the detector and measure the time it takes to detect a new peak.</p>
 the process configuration and on the performance of the streaming source. A
 <a class="reference internal" href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> is not reproducing exactly the performance of a
 real-time application.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 37.529 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  200 MB</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 37.822 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  205 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-generated-examples-10-peak-detection-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/0e1f06ac031754b1722bc7b181b7568d/10_peak_detection.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">10_peak_detection.ipynb</span></code></a></p>
@@ -1141,12 +1142,13 @@ real-time application.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
+</div><script src="../../_static/documentation_options.js?v=01009efc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

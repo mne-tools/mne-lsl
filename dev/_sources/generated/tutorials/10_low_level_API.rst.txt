@@ -154,7 +154,7 @@ network. This operation is commonly named the stream resolution.
       | Sampling: 1024.0 Hz
       | Number of channels: 3
       | Data type: <class 'numpy.float32'>
-      | Source: c61e9235b42e431b9a35bfae39bf492d
+      | Source: 125551dc48804ce0b68e0fac8d4dea06
 
 
 
@@ -434,9 +434,9 @@ names are replaced by the channel numbers similarly to :func:`mne.create_info`.
 
 
 
-    <tr class="mne-repr-section-header general-01f49131-17aa-4288-aa25-3527ecf97ce7"
+    <tr class="mne-repr-section-header general-dcde3aa2-f186-48b3-b487-29733e0c03b6"
          title="Hide section" 
-        onclick="toggleVisibility('general-01f49131-17aa-4288-aa25-3527ecf97ce7')">
+        onclick="toggleVisibility('general-dcde3aa2-f186-48b3-b487-29733e0c03b6')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -448,26 +448,26 @@ names are replaced by the channel numbers similarly to :func:`mne.create_info`.
     </tr>
 
 
-    <tr class="repr-element general-01f49131-17aa-4288-aa25-3527ecf97ce7 ">
+    <tr class="repr-element general-dcde3aa2-f186-48b3-b487-29733e0c03b6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-01f49131-17aa-4288-aa25-3527ecf97ce7 ">
+    <tr class="repr-element general-dcde3aa2-f186-48b3-b487-29733e0c03b6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-01f49131-17aa-4288-aa25-3527ecf97ce7 ">
+    <tr class="repr-element general-dcde3aa2-f186-48b3-b487-29733e0c03b6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-01f49131-17aa-4288-aa25-3527ecf97ce7 ">
+    <tr class="repr-element general-dcde3aa2-f186-48b3-b487-29733e0c03b6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -482,9 +482,9 @@ names are replaced by the channel numbers similarly to :func:`mne.create_info`.
 
 
 
-    <tr class="mne-repr-section-header acquisition-d79d40ae-ff76-4ecf-a5a6-e1f6d1f575d8"
+    <tr class="mne-repr-section-header acquisition-0afcd280-d276-46b9-8d2f-6f6b02e56ee3"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-d79d40ae-ff76-4ecf-a5a6-e1f6d1f575d8')">
+        onclick="toggleVisibility('acquisition-0afcd280-d276-46b9-8d2f-6f6b02e56ee3')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -503,7 +503,7 @@ names are replaced by the channel numbers similarly to :func:`mne.create_info`.
 
 
 
-    <tr class="repr-element acquisition-d79d40ae-ff76-4ecf-a5a6-e1f6d1f575d8 ">
+    <tr class="repr-element acquisition-0afcd280-d276-46b9-8d2f-6f6b02e56ee3 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>1024.00 Hz</td>
@@ -519,9 +519,9 @@ names are replaced by the channel numbers similarly to :func:`mne.create_info`.
 
 
 
-    <tr class="mne-repr-section-header channels-7a9ba395-b1be-4d43-a9f4-ff442d1cb94f"
+    <tr class="mne-repr-section-header channels-7fe007f4-8c28-4f99-9c0b-2a773791a06d"
          title="Hide section" 
-        onclick="toggleVisibility('channels-7a9ba395-b1be-4d43-a9f4-ff442d1cb94f')">
+        onclick="toggleVisibility('channels-7fe007f4-8c28-4f99-9c0b-2a773791a06d')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -534,7 +534,7 @@ names are replaced by the channel numbers similarly to :func:`mne.create_info`.
 
 
     
-    <tr class="repr-element channels-7a9ba395-b1be-4d43-a9f4-ff442d1cb94f ">
+    <tr class="repr-element channels-7fe007f4-8c28-4f99-9c0b-2a773791a06d ">
         <td class="mne-repr-section-toggle"></td>
         <td>EEG</td>
         <td>
@@ -547,7 +547,7 @@ names are replaced by the channel numbers similarly to :func:`mne.create_info`.
     </tr>
 
 
-    <tr class="repr-element channels-7a9ba395-b1be-4d43-a9f4-ff442d1cb94f ">
+    <tr class="repr-element channels-7fe007f4-8c28-4f99-9c0b-2a773791a06d ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -562,9 +562,9 @@ names are replaced by the channel numbers similarly to :func:`mne.create_info`.
 
 
 
-    <tr class="mne-repr-section-header filters-bd597e24-31e0-49df-b875-953ace703fb2"
+    <tr class="mne-repr-section-header filters-9ea666c2-6e86-45cd-9f38-55a838917e9d"
          title="Hide section" 
-        onclick="toggleVisibility('filters-bd597e24-31e0-49df-b875-953ace703fb2')">
+        onclick="toggleVisibility('filters-9ea666c2-6e86-45cd-9f38-55a838917e9d')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -576,14 +576,14 @@ names are replaced by the channel numbers similarly to :func:`mne.create_info`.
     </tr>
 
 
-    <tr class="repr-element filters-bd597e24-31e0-49df-b875-953ace703fb2 ">
+    <tr class="repr-element filters-9ea666c2-6e86-45cd-9f38-55a838917e9d ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-bd597e24-31e0-49df-b875-953ace703fb2 ">
+    <tr class="repr-element filters-9ea666c2-6e86-45cd-9f38-55a838917e9d ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>512.00 Hz</td>
@@ -683,9 +683,9 @@ local timestamp can be compared with the LSL timestamp from acquired data.
 
  .. code-block:: none
 
-    Timestamp of the acquired data: 64.223345541
-    Current time: 64.433858585
-    Delta: 0.21051304399999538 seconds
+    Timestamp of the acquired data: 70.851344498
+    Current time: 71.043642955
+    Delta: 0.1922984569999926 seconds
 
 
 
@@ -716,7 +716,7 @@ When you are done with a :class:`~mne_lsl.lsl.StreamInlet` or
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 3.424 seconds)
+   **Total running time of the script:** (0 minutes 3.312 seconds)
 
 **Estimated memory usage:**  202 MB
 

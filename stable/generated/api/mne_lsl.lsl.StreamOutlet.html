@@ -11,7 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -232,6 +232,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.14.html">Version 1.14</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
@@ -297,7 +298,7 @@
 <h1>mne_lsl.lsl.StreamOutlet<a class="headerlink" href="#mne-lsl-lsl-streamoutlet" title="Link to this heading">🔗</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamOutlet">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">StreamOutlet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sinfo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_buffered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_outlet.py#L23-L362"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet" title="Link to this definition">🔗</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">StreamOutlet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sinfo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_buffered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.14/src/mne_lsl/lsl/stream_outlet.py#L23-L362"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet" title="Link to this definition">🔗</a></dt>
 <dd><p>An outlet to share data and metadata on the network.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -361,7 +362,7 @@ buffered is <code class="docutils literal notranslate"><span class="pre">max_buf
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamOutlet.get_sinfo">
-<span class="sig-name descname"><span class="pre">get_sinfo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_outlet.py#L353-L362"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet.get_sinfo" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_sinfo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.14/src/mne_lsl/lsl/stream_outlet.py#L353-L362"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet.get_sinfo" title="Link to this definition">🔗</a></dt>
 <dd><p><a class="reference internal" href="mne_lsl.lsl.StreamInfo.html#mne_lsl.lsl.StreamInfo" title="mne_lsl.lsl.StreamInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamInfo</span></code></a> corresponding to this Outlet.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -375,17 +376,17 @@ buffered is <code class="docutils literal notranslate"><span class="pre">max_buf
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamOutlet.push_chunk">
-<span class="sig-name descname"><span class="pre">push_chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pushThrough</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_outlet.py#L162-L273"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet.push_chunk" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">push_chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pushThrough</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.14/src/mne_lsl/lsl/stream_outlet.py#L162-L273"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet.push_chunk" title="Link to this definition">🔗</a></dt>
 <dd><p>Push a chunk of samples into the <a class="reference internal" href="#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>x</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_samples, n_channels)</span></dt><dd><p>Samples to push, with one element for each channel at every time point. If
+<dt><strong>x</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_samples, n_channels)</span></dt><dd><p>Samples to push, with one element for each channel at every time point. If
 strings are transmitted, a list of sublist containing <code class="docutils literal notranslate"><span class="pre">(n_channels,)</span></code> is
 required. If numericals are transmitted, a numpy array of shape
 <code class="docutils literal notranslate"><span class="pre">(n_samples,</span> <span class="pre">n_channels)</span></code> is required.</p>
 </dd>
-<dt><strong>timestamp</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_samples,) | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Acquisition timestamp in agreement with <a class="reference internal" href="mne_lsl.lsl.local_clock.html#mne_lsl.lsl.local_clock" title="mne_lsl.lsl.local_clock"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne_lsl.lsl.local_clock()</span></code></a>.
+<dt><strong>timestamp</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_samples,) | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Acquisition timestamp in agreement with <a class="reference internal" href="mne_lsl.lsl.local_clock.html#mne_lsl.lsl.local_clock" title="mne_lsl.lsl.local_clock"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne_lsl.lsl.local_clock()</span></code></a>.
 If a float, the acquisition timestamp of the last sample. <code class="docutils literal notranslate"><span class="pre">None</span></code> (default)
 uses the current time. If an array, the acquisition timestamp of each
 sample.</p>
@@ -402,12 +403,12 @@ a <a class="reference internal" href="#mne_lsl.lsl.StreamOutlet" title="mne_lsl.
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamOutlet.push_sample">
-<span class="sig-name descname"><span class="pre">push_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pushThrough</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_outlet.py#L109-L160"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet.push_sample" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">push_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pushThrough</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.14/src/mne_lsl/lsl/stream_outlet.py#L109-L160"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet.push_sample" title="Link to this definition">🔗</a></dt>
 <dd><p>Push a sample into the <a class="reference internal" href="#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>x</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_channels,)</span></dt><dd><p>Sample to push, with one element for each channel. If strings are
+<dt><strong>x</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_channels,)</span></dt><dd><p>Sample to push, with one element for each channel. If strings are
 transmitted, a list is required. If numericals are transmitted, a numpy
 array is required.</p>
 </dd>
@@ -426,7 +427,7 @@ a <a class="reference internal" href="#mne_lsl.lsl.StreamOutlet" title="mne_lsl.
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamOutlet.wait_for_consumers">
-<span class="sig-name descname"><span class="pre">wait_for_consumers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_outlet.py#L275-L295"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet.wait_for_consumers" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">wait_for_consumers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.14/src/mne_lsl/lsl/stream_outlet.py#L275-L295"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamOutlet.wait_for_consumers" title="Link to this definition">🔗</a></dt>
 <dd><p>Wait (block) until at least one <a class="reference internal" href="mne_lsl.lsl.StreamInlet.html#mne_lsl.lsl.StreamInlet" title="mne_lsl.lsl.StreamInlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamInlet</span></code></a> connects.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -454,7 +455,7 @@ Any application inlet will be recognized.</p>
 <p>All channels in a stream have the same format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> | <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> | <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -629,12 +630,13 @@ the description of individual channels.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
+</div><script src="../../_static/documentation_options.js?v=01009efc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

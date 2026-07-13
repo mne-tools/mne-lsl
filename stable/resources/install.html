@@ -11,7 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -232,6 +232,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../development/changes/1.14.html">Version 1.14</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.13.html">Version 1.13.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
@@ -344,6 +345,16 @@ path to the <a class="reference external" href="https://github.com/sccn/liblsl">
 </pre></div>
 </div>
 </div>
+</div>
+</section>
+<section id="recording-streams-to-disk">
+<h2>Recording streams to disk<a class="headerlink" href="#recording-streams-to-disk" title="Link to this heading">🔗</a></h2>
+<p>Recording an LSL stream to disk with <a class="reference internal" href="../generated/api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.start_record" title="mne_lsl.stream.StreamLSL.start_record"><code class="xref py py-meth docutils literal notranslate"><span class="pre">start_record()</span></code></a>
+requires the optional dependency <code class="docutils literal notranslate"><span class="pre">pylabrecorder</span></code>, which bundles
+<a class="reference external" href="https://github.com/labstreaminglayer/App-LabRecorder">LabRecorder</a>. It is only available on <a class="reference external" href="https://pypi.org/project/mne-lsl/">PyPI</a> (not on
+<a class="reference external" href="https://anaconda.org/conda-forge/mne-lsl">conda-forge</a>) and can be installed with:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>mne-lsl<span class="o">[</span>record<span class="o">]</span>
+</pre></div>
 </div>
 </section>
 <section id="different-liblsl-version">
@@ -460,6 +471,7 @@ with <code class="docutils literal notranslate"><span class="pre">PyQt5</span></
             <ul>
 <li><a class="reference internal" href="#">Install</a><ul>
 <li><a class="reference internal" href="#default-install">Default install</a></li>
+<li><a class="reference internal" href="#recording-streams-to-disk">Recording streams to disk</a></li>
 <li><a class="reference internal" href="#different-liblsl-version">Different liblsl version</a></li>
 <li><a class="reference internal" href="#liblsl-and-labrecorder-dependencies">liblsl and LabRecorder dependencies</a></li>
 <li><a class="reference internal" href="#qt">Qt</a></li>
@@ -474,12 +486,13 @@ with <code class="docutils literal notranslate"><span class="pre">PyQt5</span></
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=1cdb6141"></script>
+</div><script src="../_static/documentation_options.js?v=01009efc"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

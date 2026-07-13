@@ -109,7 +109,7 @@ repository with:
 
 .. code-block:: console
 
-    $ pytest mne_lsl
+    $ pytest tests
 
 When adding a feature or fixing a bug, it is important to write a short test to ensure
 that the code behaves as expected. Separate features should be tested in separate tests

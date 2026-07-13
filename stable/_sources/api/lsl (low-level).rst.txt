@@ -34,3 +34,5 @@ found :ref:`here<resources/pylsl:Differences with pylsl>`.
     protocol_version
     local_clock
     resolve_streams
+    set_config_content
+    set_config_filename

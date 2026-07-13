@@ -11,7 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -232,6 +232,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.14.html">Version 1.14</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
@@ -311,7 +312,7 @@ rolling window. For this example, we will look at the alpha band power, between 
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mne.io</span><span class="w"> </span><span class="kn">import</span> <a href="https://mne.tools/stable/generated/mne.io.read_raw_fif.html#mne.io.read_raw_fif" title="mne.io.read_raw_fif" class="sphx-glr-backref-module-mne-io sphx-glr-backref-type-py-function"><span class="n">read_raw_fif</span></a>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mne.time_frequency</span><span class="w"> </span><span class="kn">import</span> <a href="https://mne.tools/stable/generated/mne.time_frequency.psd_array_multitaper.html#mne.time_frequency.psd_array_multitaper" title="mne.time_frequency.psd_array_multitaper" class="sphx-glr-backref-module-mne-time_frequency sphx-glr-backref-type-py-function"><span class="n">psd_array_multitaper</span></a>
-<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.python.org/3/library/types.html#types.GenericAlias" title="types.GenericAlias" class="sphx-glr-backref-module-types sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.python.org/3/library/typing.html#typing.TypeAliasType" title="typing.TypeAliasType" class="sphx-glr-backref-module-typing sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.simpson.html#scipy.integrate.simpson" title="scipy.integrate.simpson" class="sphx-glr-backref-module-scipy-integrate sphx-glr-backref-type-py-function"><span class="n">simpson</span></a>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html#scipy.signal.periodogram" title="scipy.signal.periodogram" class="sphx-glr-backref-module-scipy-signal sphx-glr-backref-type-py-function"><span class="n">periodogram</span></a><span class="p">,</span> <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.welch.html#scipy.signal.welch" title="scipy.signal.welch" class="sphx-glr-backref-module-scipy-signal sphx-glr-backref-type-py-function"><span class="n">welch</span></a>
 
@@ -473,9 +474,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header general-a6bbf73a-52d5-4574-99da-d0789070698e"
+<tr class="mne-repr-section-header general-f2d89367-934f-4d63-b5a7-07d4b87a07ef"
      title="Hide section"
-    onclick="toggleVisibility('general-a6bbf73a-52d5-4574-99da-d0789070698e')">
+    onclick="toggleVisibility('general-f2d89367-934f-4d63-b5a7-07d4b87a07ef')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -487,7 +488,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element general-a6bbf73a-52d5-4574-99da-d0789070698e ">
+<tr class="repr-element general-f2d89367-934f-4d63-b5a7-07d4b87a07ef ">
     <td class="mne-repr-section-toggle"></td>
     <td>Filename(s)</td>
     <td>
@@ -498,26 +499,26 @@ this file apply (plus whatever default styling the IDE applies).
     </td>
 </tr>
 
-<tr class="repr-element general-a6bbf73a-52d5-4574-99da-d0789070698e ">
+<tr class="repr-element general-f2d89367-934f-4d63-b5a7-07d4b87a07ef ">
     <td class="mne-repr-section-toggle"></td>
     <td>MNE object type</td>
     <td>Raw</td>
 </tr>
-<tr class="repr-element general-a6bbf73a-52d5-4574-99da-d0789070698e ">
+<tr class="repr-element general-f2d89367-934f-4d63-b5a7-07d4b87a07ef ">
     <td class="mne-repr-section-toggle"></td>
     <td>Measurement date</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-a6bbf73a-52d5-4574-99da-d0789070698e ">
+<tr class="repr-element general-f2d89367-934f-4d63-b5a7-07d4b87a07ef ">
     <td class="mne-repr-section-toggle"></td>
     <td>Participant</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-a6bbf73a-52d5-4574-99da-d0789070698e ">
+<tr class="repr-element general-f2d89367-934f-4d63-b5a7-07d4b87a07ef ">
     <td class="mne-repr-section-toggle"></td>
     <td>Experimenter</td>
 
@@ -532,9 +533,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header acquisition-657b511f-61de-47df-98c9-9ff9d435c09d"
+<tr class="mne-repr-section-header acquisition-3bcd55b6-31e0-452b-93cf-f5efac90e07d"
      title="Hide section"
-    onclick="toggleVisibility('acquisition-657b511f-61de-47df-98c9-9ff9d435c09d')">
+    onclick="toggleVisibility('acquisition-3bcd55b6-31e0-452b-93cf-f5efac90e07d')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -546,7 +547,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element acquisition-657b511f-61de-47df-98c9-9ff9d435c09d ">
+<tr class="repr-element acquisition-3bcd55b6-31e0-452b-93cf-f5efac90e07d ">
     <td class="mne-repr-section-toggle"></td>
     <td>Duration</td>
     <td>00:00:21 (HH:MM:SS)</td>
@@ -559,14 +560,14 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element acquisition-657b511f-61de-47df-98c9-9ff9d435c09d ">
+<tr class="repr-element acquisition-3bcd55b6-31e0-452b-93cf-f5efac90e07d ">
     <td class="mne-repr-section-toggle"></td>
     <td>Sampling frequency</td>
     <td>1024.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element acquisition-657b511f-61de-47df-98c9-9ff9d435c09d ">
+<tr class="repr-element acquisition-3bcd55b6-31e0-452b-93cf-f5efac90e07d ">
     <td class="mne-repr-section-toggle"></td>
     <td>Time points</td>
     <td>20,481</td>
@@ -581,9 +582,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header channels-d0c28585-36b3-4074-8d18-ad450cb39a4e"
+<tr class="mne-repr-section-header channels-5eeacaf2-9b94-4fe9-be87-ad35b10f2bef"
      title="Hide section"
-    onclick="toggleVisibility('channels-d0c28585-36b3-4074-8d18-ad450cb39a4e')">
+    onclick="toggleVisibility('channels-5eeacaf2-9b94-4fe9-be87-ad35b10f2bef')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -596,7 +597,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element channels-d0c28585-36b3-4074-8d18-ad450cb39a4e ">
+<tr class="repr-element channels-5eeacaf2-9b94-4fe9-be87-ad35b10f2bef ">
     <td class="mne-repr-section-toggle"></td>
     <td>EEG</td>
     <td>
@@ -609,7 +610,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d0c28585-36b3-4074-8d18-ad450cb39a4e ">
+<tr class="repr-element channels-5eeacaf2-9b94-4fe9-be87-ad35b10f2bef ">
     <td class="mne-repr-section-toggle"></td>
     <td>EOG</td>
     <td>
@@ -622,7 +623,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d0c28585-36b3-4074-8d18-ad450cb39a4e ">
+<tr class="repr-element channels-5eeacaf2-9b94-4fe9-be87-ad35b10f2bef ">
     <td class="mne-repr-section-toggle"></td>
     <td>ECG</td>
     <td>
@@ -635,7 +636,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d0c28585-36b3-4074-8d18-ad450cb39a4e ">
+<tr class="repr-element channels-5eeacaf2-9b94-4fe9-be87-ad35b10f2bef ">
     <td class="mne-repr-section-toggle"></td>
     <td>Stimulus</td>
     <td>
@@ -648,7 +649,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d0c28585-36b3-4074-8d18-ad450cb39a4e ">
+<tr class="repr-element channels-5eeacaf2-9b94-4fe9-be87-ad35b10f2bef ">
     <td class="mne-repr-section-toggle"></td>
     <td>Galvanic skin response</td>
     <td>
@@ -661,7 +662,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-d0c28585-36b3-4074-8d18-ad450cb39a4e ">
+<tr class="repr-element channels-5eeacaf2-9b94-4fe9-be87-ad35b10f2bef ">
     <td class="mne-repr-section-toggle"></td>
     <td>Head & sensor digitization</td>
 
@@ -676,9 +677,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header filters-e4423b11-4168-4e54-bdc1-e051c3a4ff94"
+<tr class="mne-repr-section-header filters-1d6d2a73-6289-4755-9029-a1f05fb0055f"
      title="Hide section"
-    onclick="toggleVisibility('filters-e4423b11-4168-4e54-bdc1-e051c3a4ff94')">
+    onclick="toggleVisibility('filters-1d6d2a73-6289-4755-9029-a1f05fb0055f')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -690,14 +691,14 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element filters-e4423b11-4168-4e54-bdc1-e051c3a4ff94 ">
+<tr class="repr-element filters-1d6d2a73-6289-4755-9029-a1f05fb0055f ">
     <td class="mne-repr-section-toggle"></td>
     <td>Highpass</td>
     <td>0.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element filters-e4423b11-4168-4e54-bdc1-e051c3a4ff94 ">
+<tr class="repr-element filters-1d6d2a73-6289-4755-9029-a1f05fb0055f ">
     <td class="mne-repr-section-toggle"></td>
     <td>Lowpass</td>
     <td>512.00 Hz</td>
@@ -718,15 +719,15 @@ only apply a bandpass filter to the data.</p>
 <p>First, we will define the function estimating the bandpower on a time window. The
 bandpower will be estimated by integrating the power spectral density (PSD) on the
 frequency band of interest, using the composite Simpson’s rule
-(<a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.simpson.html#scipy.integrate.simpson" title="(in SciPy v1.17.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.integrate.simpson()</span></code></a>).</p>
+(<a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.simpson.html#scipy.integrate.simpson" title="(in SciPy v1.18.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.integrate.simpson()</span></code></a>).</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">bandpower</span><span class="p">(</span>
-    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">:</span> <a href="https://docs.python.org/3/library/types.html#types.GenericAlias" title="types.GenericAlias" class="sphx-glr-backref-module-types sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">],</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">:</span> <a href="https://docs.python.org/3/library/typing.html#typing.TypeAliasType" title="typing.TypeAliasType" class="sphx-glr-backref-module-typing sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">],</span>
     <span class="n">fs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">method</span></a><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">band</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
     <span class="n">relative</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <a href="https://docs.python.org/3/library/types.html#types.GenericAlias" title="types.GenericAlias" class="sphx-glr-backref-module-types sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <a href="https://docs.python.org/3/library/typing.html#typing.TypeAliasType" title="typing.TypeAliasType" class="sphx-glr-backref-module-typing sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">NDArray</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the bandpower of the individual channels.</span>
 
 <span class="sd">    Parameters</span>
@@ -948,8 +949,8 @@ is shown below.</p>
 </div>
 </div>
 <img alt="../../_images/bp-performance.png" class="align-center" src="../../_images/bp-performance.png" />
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 48.744 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  254 MB</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 48.925 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  258 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-generated-examples-20-bandpower-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/763809ca44892f86da239975a54aa45c/20_bandpower.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">20_bandpower.ipynb</span></code></a></p>
@@ -1044,12 +1045,13 @@ is shown below.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
+</div><script src="../../_static/documentation_options.js?v=01009efc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

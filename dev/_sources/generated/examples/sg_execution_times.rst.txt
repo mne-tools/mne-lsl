@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**03:49.298** total execution time for 5 files **from generated/examples**:
+**03:49.000** total execution time for 5 files **from generated/examples**:
 
 .. container::
 
@@ -33,17 +33,17 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_generated_examples_40_decode.py` (``40_decode.py``)
-     - 01:15.504
-     - 643.2
+     - 01:15.266
+     - 643.1
    * - :ref:`sphx_glr_generated_examples_30_real_time_evoked_responses.py` (``30_real_time_evoked_responses.py``)
-     - 00:57.273
-     - 609.6
+     - 00:57.290
+     - 640.7
    * - :ref:`sphx_glr_generated_examples_20_bandpower.py` (``20_bandpower.py``)
-     - 00:48.942
-     - 240.3
+     - 00:48.925
+     - 258.3
    * - :ref:`sphx_glr_generated_examples_10_peak_detection.py` (``10_peak_detection.py``)
-     - 00:37.867
-     - 199.3
+     - 00:37.822
+     - 205.2
    * - :ref:`sphx_glr_generated_examples_00_player_separate_process.py` (``00_player_separate_process.py``)
-     - 00:09.712
-     - 190.5
+     - 00:09.698
+     - 190.4

@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**05:17.244** total execution time for 10 files **from all galleries**:
+**05:16.750** total execution time for 10 files **from all galleries**:
 
 .. container::
 
@@ -33,32 +33,32 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_generated_examples_40_decode.py` (``../examples/40_decode.py``)
-     - 01:15.504
-     - 643.2
+     - 01:15.266
+     - 643.1
    * - :ref:`sphx_glr_generated_examples_30_real_time_evoked_responses.py` (``../examples/30_real_time_evoked_responses.py``)
-     - 00:57.273
-     - 609.6
+     - 00:57.290
+     - 640.7
    * - :ref:`sphx_glr_generated_tutorials_40_epochs.py` (``../tutorials/40_epochs.py``)
-     - 00:51.996
-     - 726.2
+     - 00:51.988
+     - 725.2
    * - :ref:`sphx_glr_generated_examples_20_bandpower.py` (``../examples/20_bandpower.py``)
-     - 00:48.942
-     - 240.3
+     - 00:48.925
+     - 258.3
    * - :ref:`sphx_glr_generated_examples_10_peak_detection.py` (``../examples/10_peak_detection.py``)
-     - 00:37.867
-     - 199.3
+     - 00:37.822
+     - 205.2
    * - :ref:`sphx_glr_generated_tutorials_20_player_annotations.py` (``../tutorials/20_player_annotations.py``)
-     - 00:14.559
-     - 196.1
+     - 00:14.505
+     - 196.9
    * - :ref:`sphx_glr_generated_tutorials_30_stream_manual.py` (``../tutorials/30_stream_manual.py``)
-     - 00:12.614
-     - 282.4
+     - 00:12.610
+     - 282.0
    * - :ref:`sphx_glr_generated_examples_00_player_separate_process.py` (``../examples/00_player_separate_process.py``)
-     - 00:09.712
-     - 190.5
+     - 00:09.698
+     - 190.4
    * - :ref:`sphx_glr_generated_tutorials_00_introduction.py` (``../tutorials/00_introduction.py``)
-     - 00:05.352
+     - 00:05.336
      - 296.0
    * - :ref:`sphx_glr_generated_tutorials_10_low_level_API.py` (``../tutorials/10_low_level_API.py``)
-     - 00:03.424
-     - 201.7
+     - 00:03.312
+     - 201.6

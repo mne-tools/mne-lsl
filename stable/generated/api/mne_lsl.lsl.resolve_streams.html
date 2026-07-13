@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Utilities" href="../../api/utilities.html"><link rel="prev" title="mne_lsl.lsl.local_clock" href="mne_lsl.lsl.local_clock.html">
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="mne_lsl.lsl.set_config_content" href="mne_lsl.lsl.set_config_content.html"><link rel="prev" title="mne_lsl.lsl.local_clock" href="mne_lsl.lsl.local_clock.html">
         <link rel="prefetch" href="../../_static/logo-mne-hex.svg" as="image">
 
     <link rel="shortcut icon" href="../../_static/logo-no-mne.svg"><!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
@@ -11,7 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -232,6 +232,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.14.html">Version 1.14</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
@@ -297,7 +298,7 @@
 <h1>mne_lsl.lsl.resolve_streams<a class="headerlink" href="#mne-lsl-lsl-resolve-streams" title="Link to this heading">🔗</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="mne_lsl.lsl.resolve_streams">
-<span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">resolve_streams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/functions.py#L52-L146"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.resolve_streams" title="Link to this definition">🔗</a></dt>
+<span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">resolve_streams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.14/src/mne_lsl/lsl/functions.py#L113-L207"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.resolve_streams" title="Link to this definition">🔗</a></dt>
 <dd><p>Resolve streams on the network.</p>
 <p>This function returns all currently available streams from any outlet on the
 network. The network is usually the subnet specified at the local router, but may
@@ -340,6 +341,9 @@ remains empty.</p>
 <div class="sphx-glr-thumbnails"><div class="sphx-glr-thumbcontainer" tooltip="LSL is a library designed for streaming time series data across different platforms and programming languages. The core library is primarily written in C++, and bindings are accessible for Python, C#, Java, MATLAB, and Unity, among others. You can find a comprehensive list here."><img alt="" src="../../_images/sphx_glr_10_low_level_API_thumb.png" />
 <p><a class="reference internal" href="../tutorials/10_low_level_API.html"><span class="doc">Low-level LSL API</span></a></p>
   <div class="sphx-glr-thumbnail-title">Low-level LSL API</div>
+</div><div class="sphx-glr-thumbcontainer" tooltip="Annotations from a Raw object can be streamed as an event stream by PlayerLSL. The stream is irregularly sampled and of type &#x27;annotations&#x27;."><img alt="" src="../../_images/sphx_glr_20_player_annotations_thumb.png" />
+<p><a class="reference internal" href="../tutorials/20_player_annotations.html"><span class="doc">Player with annotations</span></a></p>
+  <div class="sphx-glr-thumbnail-title">Player with annotations</div>
 </div><div class="sphx-glr-thumbcontainer" tooltip="The EpochsStream object can be used similarly to mne.Epochs to create epochs from a continuous stream of samples around events of interest."><img alt="" src="../../_images/sphx_glr_40_epochs_thumb.png" />
 <p><a class="reference internal" href="../tutorials/40_epochs.html"><span class="doc">Epoching a Stream in real-time</span></a></p>
   <div class="sphx-glr-thumbnail-title">Epoching a Stream in real-time</div>
@@ -351,12 +355,12 @@ remains empty.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../../api/utilities.html">
+          <a class="next-page" href="mne_lsl.lsl.set_config_content.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Utilities</div>
+                <div class="title">mne_lsl.lsl.set_config_content</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -421,12 +425,13 @@ remains empty.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1cdb6141"></script>
+</div><script src="../../_static/documentation_options.js?v=01009efc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

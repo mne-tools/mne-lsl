@@ -9,7 +9,7 @@
 <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=fd6457a4" />
     <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -230,6 +230,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="development/changes/1.14.html">Version 1.14</a></li>
 <li class="toctree-l2"><a class="reference internal" href="development/changes/1.13.html">Version 1.13.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="development/changes/1.13.html#version-1-13-1">Version 1.13.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="development/changes/1.13.html#version-1-13-0">Version 1.13.0</a></li>
@@ -700,12 +701,6 @@
   <h2>R</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="generated/api/mne_lsl.stream.BaseStream.html#mne_lsl.stream.BaseStream.record">record() (mne_lsl.stream.BaseStream method)</a>
-
-        <ul>
-          <li><a href="generated/api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.record">(mne_lsl.stream.StreamLSL method)</a>
-</li>
-        </ul></li>
         <li><a href="generated/api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL.rename_channels">rename_channels() (mne_lsl.player.PlayerLSL method)</a>
 
         <ul>
@@ -762,6 +757,10 @@
           <li><a href="generated/api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.set_channel_units">(mne_lsl.stream.StreamLSL method)</a>
 </li>
         </ul></li>
+        <li><a href="generated/api/mne_lsl.lsl.set_config_content.html#mne_lsl.lsl.set_config_content">set_config_content() (in module mne_lsl.lsl)</a>
+</li>
+        <li><a href="generated/api/mne_lsl.lsl.set_config_filename.html#mne_lsl.lsl.set_config_filename">set_config_filename() (in module mne_lsl.lsl)</a>
+</li>
         <li><a href="generated/api/mne_lsl.stream.BaseStream.html#mne_lsl.stream.BaseStream.set_eeg_reference">set_eeg_reference() (mne_lsl.stream.BaseStream method)</a>
 
         <ul>
@@ -812,8 +811,20 @@
           <li><a href="generated/api/mne_lsl.stream_viewer.StreamViewer.html#mne_lsl.stream_viewer.StreamViewer.start">(mne_lsl.stream_viewer.StreamViewer method)</a>
 </li>
         </ul></li>
+        <li><a href="generated/api/mne_lsl.stream.BaseStream.html#mne_lsl.stream.BaseStream.start_record">start_record() (mne_lsl.stream.BaseStream method)</a>
+
+        <ul>
+          <li><a href="generated/api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.start_record">(mne_lsl.stream.StreamLSL method)</a>
+</li>
+        </ul></li>
         <li><a href="generated/api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL.stop">stop() (mne_lsl.player.PlayerLSL method)</a>
 </li>
+        <li><a href="generated/api/mne_lsl.stream.BaseStream.html#mne_lsl.stream.BaseStream.stop_record">stop_record() (mne_lsl.stream.BaseStream method)</a>
+
+        <ul>
+          <li><a href="generated/api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL.stop_record">(mne_lsl.stream.StreamLSL method)</a>
+</li>
+        </ul></li>
         <li><a href="generated/api/mne_lsl.lsl.StreamInfo.html#mne_lsl.lsl.StreamInfo">StreamInfo (class in mne_lsl.lsl)</a>
 </li>
         <li><a href="generated/api/mne_lsl.lsl.StreamInlet.html#mne_lsl.lsl.StreamInlet">StreamInlet (class in mne_lsl.lsl)</a>
@@ -916,12 +927,13 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=1cdb6141"></script>
+</div><script src="_static/documentation_options.js?v=01009efc"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=30646c52"></script>
+    <script src="_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>
