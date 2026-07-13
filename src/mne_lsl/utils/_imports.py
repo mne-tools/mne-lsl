@@ -29,6 +29,8 @@ def import_optional_dependency(
     name: str,
     extra: str = "",
     raise_error: bool = True,
+    *,
+    conda: bool = True,
 ) -> ModuleType | None:
     """Import an optional dependency.
 
@@ -45,6 +47,10 @@ def import_optional_dependency(
         What to do when a dependency is not found.
         * True : Raise an ImportError.
         * False: Return None.
+    conda : bool
+        If True, the ImportError message mentions both ``pip`` and ``conda`` as
+        installation methods. If False, only ``pip`` is mentioned, e.g. for packages
+        which are not distributed on ``conda-forge``.
 
     Returns
     -------
@@ -56,9 +62,10 @@ def import_optional_dependency(
     install_name = package_name if package_name is not None else name
     if find_spec(name) is None:
         if raise_error:
+            managers = "pip or conda" if conda else "pip"
             raise ImportError(
-                f"Missing optional dependency '{install_name}'. {extra} Use pip or "
-                f"conda to install {install_name}."
+                f"Missing optional dependency '{install_name}'. {extra} Use "
+                f"{managers} to install {install_name}."
             )
         else:
             return None

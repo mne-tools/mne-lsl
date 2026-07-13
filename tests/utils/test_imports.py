@@ -22,3 +22,10 @@ def test_import_optional_dependency() -> None:
     # Test extra
     with pytest.raises(ImportError, match="blabla"):
         import_optional_dependency("non_existing_pkg", extra="blabla")
+
+    # Test the mention of conda in the error message
+    with pytest.raises(ImportError, match="Use pip or conda to install"):
+        import_optional_dependency("non_existing_pkg", conda=True)
+    with pytest.raises(ImportError, match="Use pip to install") as exc:
+        import_optional_dependency("non_existing_pkg", conda=False)
+    assert "conda" not in str(exc.value)
