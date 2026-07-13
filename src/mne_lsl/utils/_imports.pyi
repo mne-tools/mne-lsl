@@ -3,7 +3,7 @@ from types import ModuleType
 _INSTALL_MAPPING: dict[str, str]
 
 def import_optional_dependency(
-    name: str, extra: str = "", raise_error: bool = True
+    name: str, extra: str = "", raise_error: bool = True, *, conda: bool = True
 ) -> ModuleType | None:
     """Import an optional dependency.
 
@@ -20,6 +20,10 @@ def import_optional_dependency(
         What to do when a dependency is not found.
         * True : Raise an ImportError.
         * False: Return None.
+    conda : bool
+        If True, the ImportError message mentions both ``pip`` and ``conda`` as
+        installation methods. If False, only ``pip`` is mentioned, e.g. for packages
+        which are not distributed on ``conda-forge``.
 
     Returns
     -------

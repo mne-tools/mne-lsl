@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from pathlib import Path
 
 from _typeshed import Incomplete
 
@@ -8,9 +9,12 @@ from ..lsl import StreamInlet as StreamInlet
 from ..lsl import resolve_streams as resolve_streams
 from ..lsl.constants import fmt2numpy as fmt2numpy
 from ..utils._checks import check_type as check_type
+from ..utils._checks import ensure_path as ensure_path
 from ..utils._docs import copy_doc as copy_doc
 from ..utils._docs import fill_doc as fill_doc
+from ..utils._imports import import_optional_dependency as import_optional_dependency
 from ..utils.logs import logger as logger
+from ..utils.logs import warn as warn
 from .base import BaseStream as BaseStream
 
 class StreamLSL(BaseStream):
@@ -42,6 +46,7 @@ class StreamLSL(BaseStream):
     _name: Incomplete
     _stype: Incomplete
     _source_id: Incomplete
+    _recorder: Incomplete
 
     def __init__(
         self,
@@ -130,6 +135,68 @@ class StreamLSL(BaseStream):
         -------
         stream : instance of :class:`~mne_lsl.stream.StreamLSL`
             The stream instance modified in-place.
+        """
+
+    @fill_doc
+    def start_record(
+        self, fname: str | Path, *, overwrite: bool = False, timeout: float = 10
+    ) -> StreamLSL:
+        """Start recording the LSL stream to disk.
+
+        The recording is performed in the background by `LabRecorder
+        <https://github.com/labstreaminglayer/App-LabRecorder>`_, bundled through the
+        optional dependency ``pylabrecorder``. The stream is captured as it is emitted
+        on the network, i.e. the channel selection, referencing and filtering applied to
+        the :class:`~mne_lsl.stream.StreamLSL` object are not reflected in the
+        recording.
+
+        Parameters
+        ----------
+        fname : path-like
+            Path to the output ``.xdf`` file. The file format is inferred from the
+            extension; only the ``.xdf`` format is currently supported.
+        overwrite : bool
+            If ``True``, overwrites the destination file if it exists.
+        timeout : float
+            Maximum duration in seconds to wait for the recording to start.
+
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+
+        Notes
+        -----
+        Recording requires the optional dependency ``pylabrecorder``, which is not
+        available on ``conda-forge``. It can be installed with
+        ``pip install mne-lsl[record]``.
+        """
+
+    def stop_record(self) -> StreamLSL:
+        """Stop the recording started with :meth:`start_record`.
+
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+        """
+
+    def _prepare_record(self, fname: str | Path, overwrite: bool) -> tuple[Path, str]:
+        """Validate the recording arguments and infer the output file format.
+
+        Parameters
+        ----------
+        fname : str | Path
+            The path where the file is recorded.
+        overwrite : bool
+            If ``True``, overwrites a file at the destination.
+
+        Returns
+        -------
+        fname : Path
+            The validated path where the file is recorded.
+        fmt : str
+            The file format inferred from the extension, either ``"xdf"`` or ``"fif"``.
         """
 
     def _acquire(self) -> None:

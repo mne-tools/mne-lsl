@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -633,8 +634,41 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         match the order of existing channel names.
         """
 
-    def record(self) -> None:
-        """Record the stream data to disk. Not implemented."""
+    @abstractmethod
+    @fill_doc
+    def start_record(
+        self, fname: str | Path, *, overwrite: bool = False, timeout: float = 10
+    ) -> BaseStream:
+        """Start recording the stream to disk.
+
+        The recording is performed in the background. The stream is captured as it is
+        emitted on the network, i.e. the channel selection, referencing and filtering
+        applied to the stream object are not reflected in the recording.
+
+        Parameters
+        ----------
+        fname : path-like
+            Path to the output file. The file format is inferred from the extension.
+        overwrite : bool
+            If ``True``, overwrites the destination file if it exists.
+        timeout : float
+            Maximum duration in seconds to wait for the recording to start.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
+
+    @abstractmethod
+    def stop_record(self) -> BaseStream:
+        """Stop the recording started with the ``start_record`` method.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
 
     @verbose
     @fill_doc
