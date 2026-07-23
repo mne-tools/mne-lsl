@@ -13,7 +13,7 @@ from mne.io.base import BaseRaw
 from numpy.testing import assert_allclose, assert_array_equal
 
 from mne_lsl.datasets import testing
-from mne_lsl.lsl import StreamInfo, StreamOutlet
+from mne_lsl.lsl import StreamInfo, StreamOutlet, local_clock
 from mne_lsl.stream import EpochsStream, StreamLSL
 from mne_lsl.stream.epochs import (
     _check_baseline,
@@ -32,6 +32,41 @@ if TYPE_CHECKING:
 
     from mne import Info
     from numpy.typing import NDArray
+
+
+def _wait_for_epochs(
+    epochs: EpochsStream,
+    n: int,
+    *,
+    timeout: float = 20,
+    settle: float = 1.5,
+    interval: float = 0.1,
+) -> None:
+    """Wait until 'n' epochs were acquired, then check that the count is stable.
+
+    Unlike ``while epochs.n_new_epochs != n``, which exits on the first observation
+    matching 'n', this reports an over-count instead of hiding it.
+    """
+    manual = epochs._acquisition_delay is None
+    start = time.monotonic()
+    while epochs.n_new_epochs < n:
+        if timeout < time.monotonic() - start:
+            raise AssertionError(
+                f"Only {epochs.n_new_epochs} epoch(s) were acquired within {timeout} "
+                f"seconds, expected {n}. Events in the buffer: {epochs.events}."
+            )
+        if manual:
+            epochs.acquire()
+        time.sleep(interval)
+    start = time.monotonic()
+    while time.monotonic() - start < settle:
+        if manual:
+            epochs.acquire()
+        time.sleep(interval)
+    assert epochs.n_new_epochs == n, (
+        f"{epochs.n_new_epochs} epoch(s) were acquired, expected {n}. Events in the "
+        f"buffer: {epochs.events}."
+    )
 
 
 def test_ensure_event_id() -> None:
@@ -775,7 +810,9 @@ def test_epochs_with_irregular_numerical_event_stream(
     n = epochs.n_new_epochs
     data = epochs.get_data()
     assert_allclose(data[:-n, :, :], np.zeros((10 - n, data.shape[1], data.shape[2])))
-    data_channels = data[-n:, 1:-1, 2:-2]  # give 2 sample of jitter
+    # the epoch spans exactly the 100 samples set to 101, so trim 10 samples per side
+    # for the timestamp jitter. A misaligned epoch still leaves a long run of 0.
+    data_channels = data[-n:, 1:-1, 10:-10]
     assert_allclose(data_channels, np.ones(data_channels.shape) * 101)
     epochs.disconnect()
     stream.disconnect()
@@ -1076,15 +1113,9 @@ def test_epochs_single_event(
     time.sleep(0.5)
     epochs.acquire()
     assert epochs.n_new_epochs == 0
-    # push a single event, then loop until the epoch is acquired or timeout. The epoch
-    # needs tmax=1.5 seconds of data after the event before it can be completed, so the
-    # loop must wait at least that long.
+    # push a single event; the epoch needs tmax=1.5 seconds of data after it to complete
     outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
-    start = time.monotonic()
-    while epochs.n_new_epochs == 0 and time.monotonic() - start < 5:
-        epochs.acquire()
-        time.sleep(0.2)
-    assert epochs.n_new_epochs == 1
+    _wait_for_epochs(epochs, 1)
     assert event_stream.n_new_samples == 1
     epochs.disconnect()
     event_stream.disconnect()
@@ -1122,10 +1153,17 @@ def test_epochs_with_more_events_than_buffer_size(
     for _ in range(5):
         outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
         time.sleep(0.1)
-    # wait for the event stream and data stream to buffer all events, so that a
-    # single acquire() call sees all 5 events at once and triggers the warning.
-    # The event_stream bufsize=10 ensures all 5 events are retained in its ringbuffer.
-    time.sleep(1.0)
+    # to trigger the warning, a single acquire() must see all 5 events at once, i.e. the
+    # event stream pulled all 5 markers and the data stream buffered past the last one.
+    # Wait on both rather than on a fixed sleep, which a loaded runner can outlast.
+    ts_last_event = local_clock()
+    start = time.monotonic()
+    while (
+        event_stream.n_new_samples < 5 or stream._timestamps[-1] <= ts_last_event
+    ) and time.monotonic() - start < 20:
+        time.sleep(0.1)
+    assert event_stream.n_new_samples == 5
+    assert ts_last_event < stream._timestamps[-1]
     with pytest.warns(RuntimeWarning, match="number of new epochs to add.*is greater"):
         epochs.acquire()
     epochs.disconnect()
@@ -1170,11 +1208,8 @@ def test_epochs_with_irregular_numerical_event_stream_and_event_id(
     time.sleep(0.1)
     outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
     time.sleep(0.1)
-    start = time.monotonic()
-    while epochs.n_new_epochs != 3 and time.monotonic() - start < 3:
-        epochs.acquire()
-        time.sleep(0.5)
     # check that we got 3 epochs on the code '1'
+    _wait_for_epochs(epochs, 3)
     events = epochs.events
     assert_array_equal(events[events != 0], [1, 1, 1])
     epochs.disconnect()
@@ -1208,7 +1243,9 @@ def test_epochs_with_irregular_numerical_event_stream_with_2_ch_and_event_id(
         10, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
     ).connect(acquisition_delay=0.1)
     sinfo = outlet_marker_3_channel.get_sinfo()
-    event_stream = StreamLSL(5, name=sinfo.name, source_id=sinfo.source_id).connect(
+    # the buffer must hold all 6 events pushed below, else the events seen by acquire()
+    # depend on how fast the acquisition thread drains the inlet.
+    event_stream = StreamLSL(10, name=sinfo.name, source_id=sinfo.source_id).connect(
         acquisition_delay=0.1
     )
     epochs = EpochsStream(
@@ -1245,12 +1282,8 @@ def test_epochs_with_irregular_numerical_event_stream_with_2_ch_and_event_id(
     time.sleep(0.1)
     outlet_marker_3_channel.push_sample(np.array([1, 2, 0], dtype=sinfo.dtype))
     time.sleep(0.1)
-    start = time.monotonic()
-    while epochs.n_new_epochs != 2 and time.monotonic() - start < 3:
-        epochs.acquire()
-        time.sleep(0.5)
     # check that we got 2 epochs on the code '1'
-    assert epochs.n_new_epochs == 2
+    _wait_for_epochs(epochs, 2)
     events = epochs.events
     assert_array_equal(events[events != 0], [1, 1])
     epochs.disconnect()

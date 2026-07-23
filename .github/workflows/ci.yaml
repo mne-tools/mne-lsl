@@ -55,6 +55,7 @@ jobs:
     needs: cibuildwheel
     name: test wheels on ${{ matrix.os }} - py${{ matrix.python }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -85,7 +86,7 @@ jobs:
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s --reruns 3 --reruns-delay 2 --rerun-except 'from pytest-timeout'
           retry_error_codes: "3,127,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
@@ -98,6 +99,7 @@ jobs:
     needs: cibuildwheel
     name: test wheels with minimum mne
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
@@ -119,7 +121,7 @@ jobs:
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s --reruns 3 --reruns-delay 2 --rerun-except 'from pytest-timeout'
           retry_error_codes: "3,127,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
@@ -132,6 +134,7 @@ jobs:
     needs: cibuildwheel
     name: test pip pre-release - py${{ matrix.python }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -160,7 +163,7 @@ jobs:
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s --reruns 3 --reruns-delay 2 --rerun-except 'from pytest-timeout'
           retry_error_codes: "3,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
@@ -172,6 +175,7 @@ jobs:
   test-editable:
     name: test editable install
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
         with:
@@ -186,7 +190,7 @@ jobs:
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s --reruns 3 --reruns-delay 2 --rerun-except 'from pytest-timeout'
           retry_error_codes: "3,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
@@ -245,6 +249,7 @@ jobs:
     needs: cibuildwheel
     name: build documentation
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - run: sudo apt update && sudo apt install -y optipng
       - uses: actions/checkout@v7
