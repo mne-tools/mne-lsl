@@ -309,13 +309,13 @@ class EpochsStream:
         is reset at every function call, even if all channels were not selected with the
         argument ``picks``.
         """
-    _last_ts: Incomplete
 
     def _acquire(self) -> None:
         """Update function looking for new epochs."""
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
+    _last_ts: Incomplete
 
     def _reset_variables(self) -> None:
         """Reset variables defined after connection."""
