@@ -694,33 +694,31 @@ def test_player_n_repeat_mmapped(
             (stream.name, stream.source_id) for stream in streams
         ]
         inlet = _create_inlet(name, source_id)
-        start_idx = player._start_idx
-        # the variable '_n_repeated' should start at 1, except if inlet creation was too
-        # slow which could happen when playing short files.
-        start_repeat = player._n_repeated
-        current_repeat = start_repeat
+        # validate looping from the pulled data itself: the player thread updates
+        # '_start_idx' and '_n_repeated' before pushing the wrap chunk, thus its state
+        # is ahead of what the inlet can pull and cannot gate data assertions.
+        n_pull = index.size * n_iterations + 1  # spans >= n_iterations wraps
+        chunks = []
+        n_collected = 0
         start_time = time.time()
-        # we want to play the file 2 times, i.e. '_n_repeated' will be set to 1 and 2,
-        # thus the loop exit when '_n_repeated' equals 3 (if start_repeat == 1).
-        while player._n_repeated < start_repeat + n_iterations:
+        while n_collected < n_pull:
             data, _ = inlet.pull_chunk()
-            if player._start_idx < start_idx:  # are we looping?
-                current_repeat += 1
-                last_sample_idx = np.where(data[:, 0] == index[-1])[0]
-                assert last_sample_idx.size == 1  # sanity-check
-                # check indexes before repeat
-                index_data = data[: last_sample_idx[0] + 1, 0]
-                assert_allclose(
-                    index_data, np.arange(index[-1] - index_data.size, index[-1]) + 1
-                )
-                # check indexes after repeat
-                index_data = data[last_sample_idx[0] + 1 :, 0]
-                assert_allclose(index_data, np.arange(index_data.size))
-            start_idx = player._start_idx
-            assert player._n_repeated == current_repeat  # test incrementation
+            if data.size != 0:
+                chunks.append(data[:, 0].copy())  # pull_chunk reuses its buffer
+                n_collected += data.shape[0]
             if timeout < time.time() - start_time:
                 raise RuntimeError("Timeout reached.")
             time.sleep(0.1)
+        stream = np.concatenate(chunks)
+        # contiguous repeating ramp: no gap, no duplicate, restart at 0 after
+        # 'index[-1]' on every loop.
+        expected = index[(int(stream[0]) + np.arange(stream.size)) % index.size]
+        assert_allclose(stream, expected)
+        n_wraps = int(np.count_nonzero(np.diff(stream) < 0))
+        assert n_iterations <= n_wraps
+        # '_n_repeated' starts at 1 and is incremented before each wrap chunk is
+        # pushed, thus before the wrap can be observed on the inlet.
+        assert 1 + n_wraps <= player._n_repeated
         close_io()
 
 
