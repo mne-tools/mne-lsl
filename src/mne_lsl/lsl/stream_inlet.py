@@ -139,12 +139,12 @@ class StreamInlet:
         except AttributeError:  # pragma: no cover
             return
         logger.debug(f"Destroying {self.__class__.__name__}, __obj not None..")
-        try:
-            self.close_stream()
-        except Exception as exc:  # pragma: no cover
-            warn(f"Error closing inlet: {str(exc)}")
-            self._stream_is_open = False
-        logger.debug(f"Destroying {self.__class__.__name__}, stream closed..")
+        # deliberately do not close_stream() first: closing breaks the connection
+        # before the destructor raises liblsl's shutdown flag, engaging the stream
+        # recovery machinery whose cancellation races with the destruction and can
+        # abort the process (sccn/liblsl#220, fixed by sccn/liblsl#289 -- close_stream()
+        # remains safe to skip either way). lsl_destroy_inlet closes the stream.
+        self._stream_is_open = False
         with self._lock:
             logger.debug(f"Destroying {self.__class__.__name__}, lock acquired..")
             obj, self._obj = self._obj, None
