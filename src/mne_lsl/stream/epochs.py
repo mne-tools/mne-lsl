@@ -457,7 +457,7 @@ class EpochsStream:
                 events = _find_events_in_stim_channels(
                     data[picks_events, :], self._event_channels, self._info["sfreq"]
                 )
-                events = _prune_events(
+                events, self._last_ts = _prune_events(
                     events,
                     self._event_id,
                     self._buffer.shape[1],
@@ -486,7 +486,7 @@ class EpochsStream:
                 events = _find_events_in_stim_channels(
                     data_events, self._event_channels, self._info["sfreq"]
                 )
-                events = _prune_events(
+                events, self._last_ts = _prune_events(
                     events,
                     self._event_id,
                     self._buffer.shape[1],
@@ -536,7 +536,7 @@ class EpochsStream:
                         ],
                         dtype=np.int64,
                     ).T
-                events = _prune_events(
+                events, self._last_ts = _prune_events(
                     events,
                     self._event_id,
                     self._buffer.shape[1],
@@ -553,7 +553,6 @@ class EpochsStream:
             if events.shape[0] == 0:  # abort in case we don't have new events to add
                 self._submit_acquisition_job()
                 return
-            self._last_ts = ts[events[-1, 0]]
             # select data, for loop is faster than the fancy indexing ideas tried and
             # will anyway operate on a small number of events most of the time.
             data_selection = np.empty(
@@ -942,31 +941,44 @@ def _prune_events(
     last_ts: float | None,
     ts_events: NDArray[np.float64] | None,
     tmin_shift: float,
-) -> NDArray[np.int64]:
-    """Prune events based on criteria and buffer size."""
+) -> tuple[NDArray[np.int64], float | None]:
+    """Prune events based on criteria and buffer size.
+
+    Returns the pruned events and the source timestamp of the last retained event,
+    used to deduplicate events across successive acquisitions. If no event is
+    retained, the input ``last_ts`` is returned unchanged.
+    """
     # remove events outside of the event_id dictionary
     if event_id is not None:
         sel = np.isin(events[:, 2], list(event_id.values()))
         events = events[sel]
+    # deduplicate on the event source timestamps which are stable across acquisitions,
+    # contrary to the mapping of an event onto the data stream timestamps 'ts'. Events
+    # from a stim channel index directly into 'ts'; the clamp is a no-op in production
+    # (event indices are always within 'ts') and only guards artificial indices.
+    keys = (
+        ts[np.minimum(events[:, 0], ts.size - 1)]
+        if ts_events is None
+        else ts_events[events[:, 0]]
+    )
+    if last_ts is not None:
+        sel = np.where(last_ts < keys)[0]
+        events = events[sel]
+        keys = keys[sel]
     # get the events position in the stream times after removing events outside of ts
     if ts_events is not None:
-        sel = np.where(
-            (ts[0] <= ts_events[events[:, 0]]) & (ts_events[events[:, 0]] <= ts[-1])
-        )[0]
+        sel = np.where((ts[0] <= keys) & (keys <= ts[-1]))[0]
         events = events[sel]
-        events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
-    sel = np.where(0 <= events[:, 0] + tmin_shift)[0]
+        keys = keys[sel]
+        events[:, 0] = np.searchsorted(ts, keys, side="left")
     # remove events which can't fit an entire epoch and/or are outside of the buffer
     sel = np.where(
         (0 <= events[:, 0] + tmin_shift)
         & (events[:, 0] + tmin_shift + buffer_size <= ts.size)
     )[0]
     events = events[sel]
-    # remove events which have already been moved to the buffer
-    if last_ts is not None:
-        sel = np.where(ts[events[:, 0]] > last_ts)[0]
-        events = events[sel]
-    return events
+    keys = keys[sel]
+    return events, last_ts if keys.size == 0 else keys[-1]
 
 
 def _process_data(

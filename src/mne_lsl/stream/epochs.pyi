@@ -415,8 +415,13 @@ def _prune_events(
     last_ts: float | None,
     ts_events: NDArray[np.float64] | None,
     tmin_shift: float,
-) -> NDArray[np.int64]:
-    """Prune events based on criteria and buffer size."""
+) -> tuple[NDArray[np.int64], float | None]:
+    """Prune events based on criteria and buffer size.
+
+    Returns the pruned events and the source timestamp of the last retained event,
+    used to deduplicate events across successive acquisitions. If no event is
+    retained, the input ``last_ts`` is returned unchanged.
+    """
 
 def _process_data(
     data: ScalarArray,
