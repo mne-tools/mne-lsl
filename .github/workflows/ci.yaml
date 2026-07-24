@@ -260,11 +260,7 @@ jobs:
         with:
           sample: "true"
           testing: "false"
-      - uses: ./.github/actions/retry-step
-        with:
-          command: "make -C doc html"
-          retry_error_codes: "2"
-          command_between_retries: "make -C doc clean"
+      - run: make -C doc html
       - run: rm -R ./doc/_build/html/.doctrees
       - uses: actions/upload-artifact@v7
         with:
