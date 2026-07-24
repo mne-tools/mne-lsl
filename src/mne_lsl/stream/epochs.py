@@ -953,14 +953,8 @@ def _prune_events(
         sel = np.isin(events[:, 2], list(event_id.values()))
         events = events[sel]
     # deduplicate on the event source timestamps which are stable across acquisitions,
-    # contrary to the mapping of an event onto the data stream timestamps 'ts'. Events
-    # from a stim channel index directly into 'ts'; the clamp is a no-op in production
-    # (event indices are always within 'ts') and only guards artificial indices.
-    keys = (
-        ts[np.minimum(events[:, 0], ts.size - 1)]
-        if ts_events is None
-        else ts_events[events[:, 0]]
-    )
+    # contrary to the mapping of an event onto the data stream timestamps 'ts'
+    keys = ts[events[:, 0]] if ts_events is None else ts_events[events[:, 0]]
     if last_ts is not None:
         sel = np.where(last_ts < keys)[0]
         events = events[sel]

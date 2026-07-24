@@ -248,21 +248,21 @@ def test_prune_events(events: NDArray[np.int64]) -> None:
     events_, _ = _prune_events(events, dict(a=1, c=3), 10, ts, None, None, 0)
     assert sorted(np.unique(events_[:, 2])) == [1, 3]
     # test pruning events that can't fit in the buffer
-    ts = np.arange(5)
-    events_, _ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, 0)
+    ts = np.arange(101)
+    events_, _ = _prune_events(events, dict(a=1, b=2, c=3), 106, ts, None, None, 0)
     assert events_.size == 0
     ts = np.arange(10000, 11000, 1.8)  # ts.size == 556
     events_, _ = _prune_events(events, dict(a=1, b=2, c=3), 500, ts, None, None, 0)
     assert events_[-1, 0] + 500 <= ts.size
     assert events_[-1, 0] == 50  # events @ 60, 70, 80, ... should be dropped
     # test fitting in the buffer with tmin
-    ts = np.arange(15)
-    events_, _ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -7)
+    ts = np.arange(101)
+    events_, _ = _prune_events(events, dict(a=1, b=2, c=3), 96, ts, None, None, -7)
     assert events_.shape[0] == 1
     assert events_[0, 0] == 10  # event @ 10 should be kept
-    events_, _ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -12)
+    events_, _ = _prune_events(events, dict(a=1, b=2, c=3), 96, ts, None, None, -12)
     assert events_.shape[0] == 0
-    events_, _ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -16)
+    events_, _ = _prune_events(events, dict(a=1, b=2, c=3), 96, ts, None, None, -16)
     assert events_.shape[0] == 1
     assert events_[0, 0] == 20  # event @ 20 should be kept
     # test pruning events that have already been moved to the buffer
