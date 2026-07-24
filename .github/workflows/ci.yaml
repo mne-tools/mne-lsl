@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest, macos-26-intel]
     defaults:
       run:
         shell: bash
@@ -55,10 +55,11 @@ jobs:
     needs: cibuildwheel
     name: test wheels on ${{ matrix.os }} - py${{ matrix.python }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest, macos-26-intel]
         python: ["3.11", "3.14"]
         include:
           - os: ubuntu-latest
@@ -83,10 +84,9 @@ jobs:
       - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
-        uses: ./.github/actions/retry-step
-        with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          retry_error_codes: "3,127,134,139"
+        # -n 1: a segfault/abort in liblsl kills only the xdist worker, letting --reruns
+        # retry the test in a fresh one. Timeouts are excluded: their reruns run untimed.
+        run: pytest tests/ -n 1 --max-worker-restart 10 --reruns 3 --reruns-delay 1 --rerun-except 'from pytest-timeout' --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v7
@@ -98,6 +98,7 @@ jobs:
     needs: cibuildwheel
     name: test wheels with minimum mne
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
@@ -117,10 +118,7 @@ jobs:
       - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
-        uses: ./.github/actions/retry-step
-        with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          retry_error_codes: "3,127,134,139"
+        run: pytest tests/ -n 1 --max-worker-restart 10 --reruns 3 --reruns-delay 1 --rerun-except 'from pytest-timeout' --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v7
@@ -132,6 +130,7 @@ jobs:
     needs: cibuildwheel
     name: test pip pre-release - py${{ matrix.python }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -158,10 +157,7 @@ jobs:
       - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
-        uses: ./.github/actions/retry-step
-        with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          retry_error_codes: "3,134,139"
+        run: pytest tests/ -n 1 --max-worker-restart 10 --reruns 3 --reruns-delay 1 --rerun-except 'from pytest-timeout' --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v7
@@ -172,6 +168,7 @@ jobs:
   test-editable:
     name: test editable install
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
         with:
@@ -184,10 +181,7 @@ jobs:
       - run: uv sync -q --locked --no-default-groups --group test
       - run: mne-lsl sys-info --developer
       - name: Run pytest
-        uses: ./.github/actions/retry-step
-        with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          retry_error_codes: "3,134,139"
+        run: pytest tests/ -n 1 --max-worker-restart 10 --reruns 3 --reruns-delay 1 --rerun-except 'from pytest-timeout' --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v7
@@ -245,6 +239,7 @@ jobs:
     needs: cibuildwheel
     name: build documentation
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - run: sudo apt update && sudo apt install -y optipng
       - uses: actions/checkout@v7
@@ -265,11 +260,7 @@ jobs:
         with:
           sample: "true"
           testing: "false"
-      - uses: ./.github/actions/retry-step
-        with:
-          command: "make -C doc html"
-          retry_error_codes: "2"
-          command_between_retries: "make -C doc clean"
+      - run: make -C doc html
       - run: rm -R ./doc/_build/html/.doctrees
       - uses: actions/upload-artifact@v7
         with:

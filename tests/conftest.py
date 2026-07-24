@@ -107,6 +107,20 @@ def close_io() -> Callable[[], None]:
     return _closer
 
 
+@pytest.fixture(autouse=True)
+def _no_recover(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Default to recover=False, whose machinery can abort on inlet destruction.
+
+    See sccn/liblsl#220. Tests never rely on silent stream recovery, and a test can
+    still opt back in by passing recover=True explicitly.
+
+    TODO: remove once sccn/liblsl#289 lands in the vendored liblsl.
+    """
+    from mne_lsl.stream import StreamLSL
+
+    monkeypatch.setitem(StreamLSL.connect.__kwdefaults__, "recover", False)
+
+
 @pytest.fixture(scope="session")
 def fname(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """Yield fname of a file with sample numbers in the first channel."""

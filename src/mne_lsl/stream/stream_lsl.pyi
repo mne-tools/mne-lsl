@@ -84,6 +84,7 @@ class StreamLSL(BaseStream):
         acquisition_delay: float | None = 0.001,
         *,
         processing_flags: str | Sequence[str] | None = None,
+        recover: bool = True,
         timeout: float | None = 2,
     ) -> StreamLSL:
         """Connect to the LSL stream and initiate data collection in the buffer.
@@ -106,6 +107,9 @@ class StreamLSL(BaseStream):
               smoothing algorithm.
             * ``'monotize'``: Force the timestamps to be monotically ascending.
               This option should not be enable if ``'dejitter'`` is not enabled.
+        recover : bool
+            Attempt to silently recover lost streams that are recoverable (requires a
+            ``source_id`` to be specified in the :class:`~mne_lsl.lsl.StreamInfo`).
         timeout : float | None
             Optional timeout (in seconds) of the operation. ``None`` disables the
             timeout. The timeout value is applied once to every operation supporting it,

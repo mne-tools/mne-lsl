@@ -279,13 +279,17 @@ class PlayerLSL(BasePlayer):
             if start == 0 and self._n_repeated == 1:
                 logger.debug("First _stream ping %s", self._name)
             stop = start + self._chunk_size
-            if stop <= self._raw.times.size:
+            if stop < self._raw.times.size:
                 data = self._raw[:, start:stop][0].T
                 self._start_idx += self._chunk_size
+            elif stop == self._raw.times.size and self._n_repeated < self._n_repeat:
+                logger.debug("End of file reached, looping back to the beginning.")
+                data = self._raw[:, start:stop][0].T
+                self._start_idx = 0
+                self._n_repeated += 1
             elif self._raw.times.size < stop and self._n_repeated < self._n_repeat:
                 logger.debug("End of file reached, looping back to the beginning.")
                 stop %= self._raw.times.size
-                start %= self._raw.times.size  # handle start == self._raw.times.size
                 data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
                 self._start_idx = stop
                 self._n_repeated += 1

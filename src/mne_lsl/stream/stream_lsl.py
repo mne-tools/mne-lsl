@@ -103,6 +103,7 @@ class StreamLSL(BaseStream):
         acquisition_delay: float | None = 0.001,
         *,
         processing_flags: str | Sequence[str] | None = None,
+        recover: bool = True,
         timeout: float | None = 2,
     ) -> StreamLSL:
         """Connect to the LSL stream and initiate data collection in the buffer.
@@ -125,6 +126,9 @@ class StreamLSL(BaseStream):
               smoothing algorithm.
             * ``'monotize'``: Force the timestamps to be monotically ascending.
               This option should not be enable if ``'dejitter'`` is not enabled.
+        recover : bool
+            Attempt to silently recover lost streams that are recoverable (requires a
+            ``source_id`` to be specified in the :class:`~mne_lsl.lsl.StreamInfo`).
         timeout : float | None
             Optional timeout (in seconds) of the operation. ``None`` disables the
             timeout. The timeout value is applied once to every operation supporting it,
@@ -183,6 +187,7 @@ class StreamLSL(BaseStream):
         self._inlet = StreamInlet(
             sinfos[0],
             max_buffered=ceil(self._bufsize),
+            recover=recover,
             processing_flags=processing_flags,
         )
         self._inlet.open_stream(timeout=timeout)
@@ -242,7 +247,7 @@ class StreamLSL(BaseStream):
             finally:
                 self._recorder = None
         super().disconnect()
-        logger.debug("Calling inlet.close_stream() for %s", str(self))
+        logger.debug("Destroying inlet for %s", str(self))
         try:
             self._inlet._del()
         except Exception:  # pragma: no cover

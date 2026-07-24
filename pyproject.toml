@@ -35,7 +35,9 @@ test = [
   'pylabrecorder>=0.3.0',
   'pytest-cov',
   'pytest-randomly',
+  'pytest-rerunfailures>=10.2',  # '--rerun-except'
   'pytest-timeout',
+  'pytest-xdist',
   'pytest>=8.0',
   'pyxdf',
 ]
@@ -167,6 +169,9 @@ omit = [
 addopts = ['--color=yes', '--cov-report=', '--durations=20', '--junit-xml=junit-results.xml', '--strict-config', '--tb=short', '-ra', '-v']
 junit_family = 'xunit2'
 minversion = '8.0'
+# the slowest test is ~30 seconds on CI, anything above 3 minutes is a hang, thus the
+# generous margin for slow runners.
+timeout = 180
 
 [tool.ruff]
 extend-exclude = ["doc/_examples/*.py"]

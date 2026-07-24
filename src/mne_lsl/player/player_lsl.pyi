@@ -251,7 +251,7 @@ class PlayerLSL(BasePlayer):
 
     def _del_outlets(self) -> None:
         """Attempt to delete outlets."""
-    _start_idx: Incomplete
+    _start_idx: int
     _end_streaming: bool
 
     def _stream(self) -> None:
