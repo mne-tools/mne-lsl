@@ -35,7 +35,9 @@ test = [
   'pylabrecorder>=0.3.0',
   'pytest-cov',
   'pytest-randomly',
+  'pytest-rerunfailures>=10.2',  # '--rerun-except'
   'pytest-timeout',
+  'pytest-xdist',
   'pytest>=8.0',
   'pyxdf',
 ]

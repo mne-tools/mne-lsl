@@ -84,10 +84,9 @@ jobs:
       - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
-        uses: ./.github/actions/retry-step
-        with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          retry_error_codes: "3,127,134,139"
+        # -n 1: a segfault/abort in liblsl kills only the xdist worker, letting --reruns
+        # retry the test in a fresh one. Timeouts are excluded: their reruns run untimed.
+        run: pytest tests/ -n 1 --max-worker-restart 10 --reruns 3 --reruns-delay 1 --rerun-except 'from pytest-timeout' --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v7
@@ -119,10 +118,7 @@ jobs:
       - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
-        uses: ./.github/actions/retry-step
-        with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          retry_error_codes: "3,127,134,139"
+        run: pytest tests/ -n 1 --max-worker-restart 10 --reruns 3 --reruns-delay 1 --rerun-except 'from pytest-timeout' --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v7
@@ -161,10 +157,7 @@ jobs:
       - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
-        uses: ./.github/actions/retry-step
-        with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          retry_error_codes: "3,134,139"
+        run: pytest tests/ -n 1 --max-worker-restart 10 --reruns 3 --reruns-delay 1 --rerun-except 'from pytest-timeout' --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v7
@@ -188,10 +181,7 @@ jobs:
       - run: uv sync -q --locked --no-default-groups --group test
       - run: mne-lsl sys-info --developer
       - name: Run pytest
-        uses: ./.github/actions/retry-step
-        with:
-          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          retry_error_codes: "3,134,139"
+        run: pytest tests/ -n 1 --max-worker-restart 10 --reruns 3 --reruns-delay 1 --rerun-except 'from pytest-timeout' --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v7
