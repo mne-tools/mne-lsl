@@ -51,6 +51,11 @@ class build_ext(_build_ext):  # noqa: D101
             unit_tests = eval(unit_tests) if unit_tests is not None else False
             if unit_tests:
                 args.append("-DLSL_UNITTESTS=ON")
+            # build systems such as conda-build export the settings required to build in
+            # their environment through 'CMAKE_ARGS', e.g. the archiver used for LTO or
+            # the macOS sysroot. They are added last to take precedence over the
+            # defaults set above.
+            args.extend(os.environ.get("CMAKE_ARGS", "").split())
             subprocess.run(args, check=True)
             subprocess.run(
                 ["cmake", "--build", build_dir, "--config", "Release"], check=True
