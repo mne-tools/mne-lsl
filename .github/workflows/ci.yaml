@@ -189,6 +189,58 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  test-viewer:
+    needs: cibuildwheel
+    name: test viewer on ${{ matrix.os }} - ${{ matrix.qt }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # 'mne_lsl.viewer' must work under both Qt bindings. Windows is not a target, and
+        # the Qt stack is pinned to a single Python: PyQt6/PySide6 wheel availability lags
+        # for the newest interpreters, and the viewer is not free-threading safe anyway.
+        os: [ubuntu-latest, macos-latest]
+        qt: [pyqt6, pyside6]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          activate-environment: true
+          python-version: '3.13'
+      # 'qt: true' is required: it is what installs the Qt system libraries (libegl1,
+      # libxcb-*, libxkbcommon-x11-0, ...) on a headless Linux runner. Without it the
+      # action only sets up Xvfb and a Qt binding fails to load its platform plugin. The
+      # tests still render with QT_QPA_PLATFORM=offscreen ('tests/viewer/conftest.py').
+      - uses: pyvista/setup-headless-display-action@v4
+        if: ${{ runner.os == 'Linux' }}
+        with:
+          qt: true
+          pyvista: false  # only sets PYVISTA_OFF_SCREEN, unused here
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: cibw-wheels-${{ matrix.os }}-*
+          merge-multiple: true
+          path: dist
+      - run: ls -alt . && ls -alt dist/
+      # '--no-install-project' still installs the extra's dependencies, so the Qt stack is
+      # present while 'mne_lsl' itself comes from the built wheel below -- no local cmake
+      # build of liblsl.
+      - run: uv sync -q --locked --no-default-groups --group test --group test-viewer --extra ${{ matrix.qt }} --no-install-project
+      - run: uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
+      - run: mne-lsl sys-info  # not '--developer': that path needs the pyproject.toml of an editable install
+      - uses: ./.github/actions/get-testing-dataset
+      # only 'tests/viewer' -- the other jobs cover the rest of the suite without Qt. The
+      # coverage upload matters: without it, every other job reports the viewer as
+      # uncovered and codecov reads that as a regression.
+      - run: pytest tests/viewer -n 1 --max-worker-restart 10 --reruns 3 --reruns-delay 1 --rerun-except 'from pytest-timeout' --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
+      - uses: codecov/codecov-action@v7
+        if: ${{ github.repository == 'mne-tools/mne-lsl' }}
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   sdist:
     name: create sdist
     runs-on: ubuntu-latest

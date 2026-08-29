@@ -214,6 +214,11 @@ class StreamLSL(BaseStream):
         """Connection status of the stream.
 
         :type: :class:`bool`
+
+        Notes
+        -----
+        A partially set state reads as not connected, so this property is readable while
+        the acquisition thread is resetting the stream, e.g. after a lost stream.
         """
 
     @property

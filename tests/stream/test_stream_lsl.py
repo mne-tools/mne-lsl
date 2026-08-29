@@ -410,6 +410,13 @@ def test_stream_channel_units(mock_lsl_stream: DummyPlayer, raw: BaseRaw) -> Non
     assert ch_units[stream.ch_names.index("hEOG")][1] == -6
     assert ch_units[stream.ch_names.index("TRIGGER")][1] == 3
 
+    # bad channels are not excluded, else the returned list could not be indexed by
+    # channel, unlike 'get_channel_types()'
+    stream.info["bads"] = [stream.ch_names[1], stream.ch_names[3]]
+    assert len(stream.get_channel_units()) == len(stream.ch_names)
+    assert len(stream.get_channel_types()) == len(stream.ch_names)
+    stream.info["bads"] = []
+
     # set channel units after channel selection
     stream.pick(["vEOG", "hEOG", "TRIGGER", "F7", "Fp2"])
     raw_ = raw.copy().pick(["Fp2", "F7", "vEOG", "hEOG", "TRIGGER"])
@@ -1442,3 +1449,103 @@ def test_disconnect_stops_record(mock_lsl_stream: DummyPlayer, tmp_path: Path) -
     stream.disconnect()
     assert stream._recorder is None
     assert fname.exists()
+
+
+def test_connected_mid_disconnect(mock_lsl_stream: DummyPlayer) -> None:
+    """Test that 'connected' and 'repr' are readable while the stream is torn down."""
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
+    stream.connect(acquisition_delay=0.1)
+    assert stream.connected
+    # the acquisition thread resets the attributes one at a time, so every intermediate
+    # state must read as 'not connected' instead of raising 'AssertionError'
+    expected = f"<Stream: OFF | {stream.name} (source: {stream.source_id})>"
+    for attr in ("_buffer", "_info", "_picks_inlet", "_timestamps", "_sinfo", "_inlet"):
+        kept = getattr(stream, attr)
+        setattr(stream, attr, None)
+        try:
+            assert not stream.connected
+            assert repr(stream) == expected
+        finally:
+            setattr(stream, attr, kept)
+        assert stream.connected
+    stream.disconnect()
+
+
+def test_connected_not_connected() -> None:
+    """Test 'connected' on a stream which was never connected."""
+    stream = Stream(bufsize=2.0, name="test-connected-not-connected")
+    assert not stream.connected
+    with pytest.raises(RuntimeError, match="not connected"):
+        stream.get_data()
+    # a partially initialized stream reads as not connected and raises a clear error
+    stream._info = create_info(1, 1000.0, "eeg")
+    assert not stream.connected
+    with pytest.raises(RuntimeError, match="not connected"):
+        stream._check_connected("test")
+
+
+def test_disconnect_idempotent(mock_lsl_stream: DummyPlayer) -> None:
+    """Test that disconnecting an already disconnected stream is a no-op."""
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
+    stream.connect(acquisition_delay=0.1)
+    assert stream.disconnect() is stream
+    assert not stream.connected
+    # warnings are errors in this suite, so 'does not warn' is asserted for free
+    assert stream.disconnect() is stream
+    assert not stream.connected
+
+
+def test_disconnect_reason(
+    close_io: Callable[[], None], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test the exception which disconnected a stream.
+
+    'MNE_LSL_RAISE_STREAM_ERRORS' is pinned to the library default, which this suite
+    otherwise overrides to 'true' in 'tests/conftest.py'. Under the override the
+    acquisition thread re-raises the exception into its own discarded 'Future', and a
+    'raise' re-attaches a traceback to the object being raised -- so the traceback
+    assertion below would be a race against that statement rather than a property of the
+    recorded reason.
+    """
+    monkeypatch.setenv("MNE_LSL_RAISE_STREAM_ERRORS", "false")
+    name = "test-disconnect-reason"
+    source_id = f"pytest-{uuid.uuid4().hex}"
+    sinfo = StreamInfo(name, "eeg", 1, 100, "float32", source_id)
+    sinfo.set_channel_names(["ch0"])
+    sinfo.set_channel_types("eeg")
+    sinfo.set_channel_units("uv")
+    outlet = StreamOutlet(sinfo)
+    stream = Stream(bufsize=2.0, name=name, source_id=source_id)
+    stream.connect(acquisition_delay=0.1)
+    assert stream.disconnect_reason is None
+
+    def callback(data: NDArray, timestamps: NDArray[np.float64], info: Info) -> None:
+        """Callback which drives the acquisition thread's error teardown."""
+        raise ZeroDivisionError("a bad callback")
+
+    stream.add_callback(callback)
+    outlet.push_chunk(np.zeros((10, 1), dtype=np.float32))
+    start = time.monotonic()
+    while stream.connected and time.monotonic() - start < 10:
+        time.sleep(0.01)
+    assert not stream.connected
+    assert isinstance(stream.disconnect_reason, ZeroDivisionError)
+    assert str(stream.disconnect_reason) == "a bad callback"
+    # Stripped of its traceback, and it has to be: the frames of an acquisition failure
+    # hold the pull buffers the samples were read into -- 31 MB at 256 channels and
+    # 1024 Hz over a 30 s buffer -- and this attribute keeps them reachable for the life
+    # of the object if the caller never reconnects. Nothing reads the traceback: both
+    # consumers branch on the exception type.
+    assert stream.disconnect_reason.__traceback__ is None
+    # the reason survives the idempotent 'disconnect()' and is cleared by a reconnection
+    stream.disconnect()
+    assert isinstance(stream.disconnect_reason, ZeroDivisionError)
+    stream.connect(acquisition_delay=0.1)
+    assert stream.disconnect_reason is None
+    stream.disconnect()
+    assert stream.disconnect_reason is None
+    close_io()

@@ -213,6 +213,10 @@ class EpochsStream:
         )
         # define acquisition variables which need to be reset on disconnect
         self._lock = threading.Lock()
+        # exception which disconnected the epochs, deliberately kept out of
+        # '_reset_variables' since the acquisition thread calls it to disconnect and the
+        # reason must survive that teardown to be readable afterwards.
+        self._disconnect_reason = None
         self._reset_variables()
 
     def __del__(self) -> None:
@@ -318,6 +322,7 @@ class EpochsStream:
                     f"{acquisition_delay} is invalid."
                 )
         self._acquisition_delay = acquisition_delay
+        self._disconnect_reason = None  # a reconnection does not report the last loss
         assert self._n_new_epochs == 0  # sanity-check
         # create the buffer and start acquisition in a separate thread
         self._picks = _picks_to_idx(
@@ -370,6 +375,9 @@ class EpochsStream:
         if not self.connected:
             logger.info("The EpochsStream %s is already disconnected. Skipping.", self)
             return
+        # The reason is deliberately not cleared here, see 'BaseStream.disconnect': a
+        # reconnection is what guarantees no stale reason, and clearing it on the way
+        # out can erase one the acquisition thread has just recorded.
         if hasattr(self, "_executor") and self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
         self._reset_variables()
@@ -599,7 +607,14 @@ class EpochsStream:
                 # update the last ts and the number of new epochs
                 self._n_new_epochs += events.shape[0]
         except Exception as error:  # pragma: no cover
+            # The log first and the reason second, for the reason 'StreamLSL._acquire'
+            # records: 'logger.exception' reads the traceback off the exception object,
+            # so stripping it first logs a frameless exception. The reason is still
+            # recorded before the reset, and stripped of its traceback, whose frames
+            # would pin every array this function read out of the stream for as long as
+            # the reason is readable.
             logger.exception(error)
+            self._disconnect_reason = error.with_traceback(None)
             self._reset_variables()
             if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
                 raise error
@@ -644,19 +659,30 @@ class EpochsStream:
         """Connection status of the :class:`~mne_lsl.stream.EpochsStream`.
 
         :type: :class:`bool`
+
+        Notes
+        -----
+        A partially set state reads as not connected, so this property is readable while
+        the acquisition thread is resetting the epochs, e.g. after a lost stream.
+        :meth:`~mne_lsl.stream.EpochsStream.get_data` and the other methods still report
+        a genuinely partial initialization through a clear :class:`RuntimeError`.
         """
-        attributes = (
-            "_buffer",
-            "_ch_idx_by_type",
-            "_info",
-            "_picks",
-        )
-        if all(getattr(self, attr, None) is None for attr in attributes):
-            return False
-        else:
-            # sanity-check
-            assert not any(getattr(self, attr, None) is None for attr in attributes)
-            return True
+        attributes = ("_buffer", "_ch_idx_by_type", "_info", "_picks")
+        return all(getattr(self, attr, None) is not None for attr in attributes)
+
+    @property
+    def disconnect_reason(self) -> BaseException | None:
+        """Exception which disconnected the epochs, if any.
+
+        :type: :class:`BaseException` | None
+
+        Notes
+        -----
+        ``None`` while the epochs are connected and after a clean call to
+        :meth:`~mne_lsl.stream.EpochsStream.disconnect`; the exception raised in the
+        acquisition thread when that thread disconnected the epochs.
+        """
+        return self._disconnect_reason
 
     @property
     def events(self) -> NDArray[np.int16]:

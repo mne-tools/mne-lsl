@@ -312,6 +312,20 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Idempotent: disconnecting an already disconnected stream is a no-op. The
+        acquisition thread resets the stream on an acquisition error, e.g. after a lost
+        stream, so a caller which owns the stream can always disconnect it.
+
+        The disconnection reason is deliberately **not** cleared here.
+        :meth:`~mne_lsl.stream.BaseStream.connect` already guarantees that a reconnected
+        stream reports no stale reason, which is the whole guarantee anyone needs, while
+        clearing it on the way out would erase a reason the acquisition thread had just
+        recorded -- it records the exception before it resets the stream, so there is a
+        window in which this method is reached with a fresh reason and a state which
+        still reads as connected.
         """
 
     def del_filter(self, idx: int | list[int] | tuple[int, ...] | str = "all") -> None:
@@ -594,8 +608,25 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         buffer <resources/implementations:StreamLSL>`.
         """
 
-    def plot(self) -> None:
-        """Open a real-time stream viewer. Not implemented."""
+    def plot(self) -> int:
+        """Open the stream viewer on this stream and run it until it is closed.
+
+        Returns
+        -------
+        code : int
+            Exit code of the viewer.
+
+        Notes
+        -----
+        Blocking, and deliberately unlike :meth:`mne.io.Raw.plot`, which defaults
+        ``block=False``. That default works because it returns a figure an interactive
+        event loop keeps alive; a stream viewer has no such fallback, so opened from
+        a plain script without blocking it would be taken down with the script on the
+        next line. Use ``Viewer(stream=...).show()`` for the non-blocking form, from a
+        caller which already runs an event loop.
+
+        The stream is borrowed: closing the viewer leaves it connected.
+        """
 
     @fill_doc
     def pick(
@@ -963,6 +994,28 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Connection status of the stream.
 
         :type: :class:`bool`
+
+        Notes
+        -----
+        A partially set state reads as not connected. The acquisition thread resets the
+        stream attribute by attribute, e.g. after a lost stream, so this property is
+        readable at any point of that teardown. A genuinely partial initialization is
+        reported by :meth:`~mne_lsl.stream.StreamLSL.get_data` and by the other methods
+        through a clear :class:`RuntimeError`.
+        """
+
+    @property
+    def disconnect_reason(self) -> BaseException | None:
+        """Exception which disconnected the stream, if any.
+
+        :type: :class:`BaseException` | None
+
+        Notes
+        -----
+        ``None`` while the stream is connected and after a clean call to
+        :meth:`~mne_lsl.stream.StreamLSL.disconnect`; the exception raised in the
+        acquisition thread when that thread disconnected the stream, e.g. a
+        ``LostError`` for a stream whose source went away.
         """
 
     @property

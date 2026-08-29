@@ -110,13 +110,22 @@ liblsl and LabRecorder dependencies
 Qt
 --
 
-``MNE-LSL`` requires a Qt binding for the legacy
-:class:`~mne_lsl.stream_viewer.StreamViewer` and for the future ``mne_lsl.Viewer``. All
-4 Qt bindings, ``PyQt5``, ``PyQt6``, ``PySide2`` and ``PySide6`` are supported thanks to
-``qtpy``. It is up to the user to make sure one of the binding is installed in the
-environment.
+The ``Viewer``, opened with ``mne-lsl viewer``, requires a Qt binding and a couple of Qt
+libraries. Those are not part of the default install: importing ``mne_lsl`` never
+imports Qt. Instead, they are gathered in 2 mutually-exclusive optional dependency
+groups, one per supported binding:
+
+.. code-block:: console
+
+    $ pip install mne-lsl[pyqt6]
+
+.. code-block:: console
+
+    $ pip install mne-lsl[pyside6]
+
+Install one or the other, not both.
 
 .. warning::
 
-    The legacy :class:`~mne_lsl.stream_viewer.StreamViewer` was developed and tested
-    with ``PyQt5`` only.
+    Only Qt 6 is supported. The Qt 5 bindings, ``PyQt5`` and ``PySide2``, are not
+    supported.

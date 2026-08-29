@@ -1076,6 +1076,86 @@ def test_epochs_events(mock_lsl_stream: DummyPlayer) -> None:
     stream.disconnect()
 
 
+def test_epochs_connected_mid_disconnect(mock_lsl_stream: DummyPlayer) -> None:
+    """Test that 'connected' is readable while the epochs are torn down."""
+    stream = StreamLSL(
+        6, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    epochs = EpochsStream(
+        stream,
+        10,
+        event_channels="trg",
+        event_id=dict(a=1),
+        tmin=0,
+        tmax=0.5,
+        baseline=None,
+    ).connect(acquisition_delay=0.1)
+    assert epochs.connected
+    # the acquisition thread resets the attributes one at a time, so every intermediate
+    # state must read as 'not connected' instead of raising 'AssertionError'
+    for attr in ("_buffer", "_ch_idx_by_type", "_info", "_picks"):
+        kept = getattr(epochs, attr)
+        setattr(epochs, attr, None)
+        try:
+            assert not epochs.connected
+        finally:
+            setattr(epochs, attr, kept)
+        assert epochs.connected
+    epochs.disconnect()
+    stream.disconnect()
+
+
+def test_epochs_disconnect_reason(
+    mock_lsl_stream: DummyPlayer, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test the exception which disconnected an EpochsStream.
+
+    'MNE_LSL_RAISE_STREAM_ERRORS' is pinned to the library default, which this suite
+    otherwise overrides to 'true': under the override the acquisition thread re-raises
+    the exception into its own discarded 'Future', and a 'raise' re-attaches a traceback
+    to the object being raised, which the assertion below would then race.
+    """
+    monkeypatch.setenv("MNE_LSL_RAISE_STREAM_ERRORS", "false")
+    stream = StreamLSL(
+        6, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    epochs = EpochsStream(
+        stream,
+        10,
+        event_channels="trg",
+        event_id=dict(a=1),
+        tmin=0,
+        tmax=0.5,
+        baseline=None,
+    ).connect(acquisition_delay=0.1)
+    assert epochs.disconnect_reason is None
+
+    def raiser(*args, **kwargs) -> None:
+        """Drive the acquisition thread's error teardown."""
+        raise ZeroDivisionError("a bad acquisition")
+
+    monkeypatch.setattr(
+        "mne_lsl.stream.epochs._remove_empty_elements", raiser, raising=True
+    )
+    start = time.monotonic()
+    while epochs.connected and time.monotonic() - start < 10:
+        time.sleep(0.01)
+    assert not epochs.connected
+    assert isinstance(epochs.disconnect_reason, ZeroDivisionError)
+    assert str(epochs.disconnect_reason) == "a bad acquisition"
+    assert epochs.disconnect_reason.__traceback__ is None  # it pins the read arrays
+    # A reconnection is what clears the reason, and it clears it before anything can
+    # acquire: 'acquisition_delay=None' submits no job at all, so this pins the ordering
+    # deterministically instead of racing the acquisition thread for it.
+    epochs.connect(acquisition_delay=None)
+    assert epochs.connected
+    assert epochs.disconnect_reason is None
+    # the acquisition thread does not de-register the epochs from the stream, so the
+    # stream would warn about a still-attached EpochsStream without this call.
+    epochs.disconnect()
+    stream.disconnect()
+
+
 @pytest.fixture
 def sinfo_marker() -> StreamInfo:
     """Stream info for a marker stream."""

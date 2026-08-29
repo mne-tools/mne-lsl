@@ -67,11 +67,7 @@ class StreamLSL(BaseStream):
 
     @copy_doc(BaseStream.__repr__)
     def __repr__(self) -> str:
-        try:
-            conn = self.connected
-        except AssertionError:  # can raise on `assert`, e.g., in mid-disconnect or del
-            conn = False
-        if conn:
+        if self.connected:
             status = "ON"
             desc = f"{self._name} (source: {self._source_id or 'unknown'})"
         else:
@@ -247,11 +243,12 @@ class StreamLSL(BaseStream):
             finally:
                 self._recorder = None
         super().disconnect()
-        logger.debug("Destroying inlet for %s", str(self))
-        try:
-            self._inlet._del()
-        except Exception:  # pragma: no cover
-            pass
+        if self._inlet is not None:  # 'None' when the acquisition thread already reset
+            logger.debug("Destroying inlet for %s", str(self))
+            try:
+                self._inlet._del()
+            except Exception:  # pragma: no cover
+                pass
         self._reset_variables()  # also sets self._inlet = None
         return self
 
@@ -441,7 +438,19 @@ class StreamLSL(BaseStream):
                     "Stream.get_data()."
                 )
         except Exception as error:  # pragma: no cover
+            # The order of these two lines is load-bearing in both directions. The log
+            # comes first because 'logger.exception' reads the traceback off the
+            # exception object -- measured: stripping it first logs the exception with
+            # no frames at all, which is the only diagnostic anyone gets for an
+            # acquisition thread which died. The reason is recorded second, but still
+            # before the reset, which is not raising: a reader must never see a reset
+            # stream with no reason. It is stripped of its traceback because those pin
+            # function's own 'data'/'timestamps' -- and the pull buffers they were read
+            # from, 31 MB at 256 channels and 1024 Hz over a 30 s buffer -- for as long
+            # as the reason is readable, i.e. for the life of the object if the caller
+            # never reconnects. Nothing reads it: both consumers branch on the type.
             logger.exception(error)
+            self._disconnect_reason = error.with_traceback(None)
             self._reset_variables()  # disconnects from the stream
             if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
                 raise error
@@ -460,19 +469,16 @@ class StreamLSL(BaseStream):
         """Connection status of the stream.
 
         :type: :class:`bool`
+
+        Notes
+        -----
+        A partially set state reads as not connected, so this property is readable while
+        the acquisition thread is resetting the stream, e.g. after a lost stream.
         """
-        attributes = (
-            "_sinfo",
-            "_inlet",
+        attributes = ("_sinfo", "_inlet")
+        return super().connected and all(
+            getattr(self, attr, None) is not None for attr in attributes
         )
-        if super().connected:
-            # sanity-check
-            assert not any(getattr(self, attr, None) is None for attr in attributes)
-            return True
-        else:
-            # sanity-check
-            assert all(getattr(self, attr, None) is None for attr in attributes)
-            return False
 
     @property
     def name(self) -> str | None:

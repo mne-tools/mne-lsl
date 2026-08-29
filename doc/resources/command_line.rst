@@ -3,9 +3,8 @@
 Command line
 ============
 
-A ``Player``, or the legacy :class:`~mne_lsl.stream_viewer.StreamViewer`, can be
-called from the command line. For each command, the flag ``-h`` or ``--help`` provides
-additional information.
+A ``Player``, or the ``Viewer``, can be called from the command line. For each command,
+the flag ``-h`` or ``--help`` provides additional information.
 
 .. code-block:: console
 
@@ -36,25 +35,16 @@ With the arguments:
 * ``--annotations`` (optional): enable streaming of annotations on a second
   :class:`~mne_lsl.lsl.StreamOutlet`.
 
-StreamViewer
-------------
+Viewer
+------
 
-A legacy :class:`~mne_lsl.stream_viewer.StreamViewer` can be opened with the command:
+The ``Viewer`` can be opened with the command:
 
 .. code-block:: console
 
     $ mne-lsl viewer
 
-With the arguments:
-
-- ``-s``, ``--stream`` (optional): :class:`str`, name of the stream to connect to.
-
-.. note::
-
-    If ``stream_name`` is not provided, a prompt is displayed to select a stream among
-    the available ones.
-
-The :class:`~mne_lsl.stream_viewer.StreamViewer` opens 2 windows:
-
-- A controller to select the channels to plot and set different plotting parameters.
-- A plotting window using the ``pyqtgraph`` backend displaying the signal in real-time.
+The ``Viewer`` starts disconnected and discovers the available LSL streams from within
+the graphical interface, thus it does not take any stream argument. It requires one of
+the optional Qt dependency groups, ``mne-lsl[pyqt6]`` or ``mne-lsl[pyside6]``, see
+:ref:`resources/install:Qt`.

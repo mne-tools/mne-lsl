@@ -41,6 +41,12 @@ test = [
   'pytest>=8.0',
   'pyxdf',
 ]
+# 'pytest-qt' is an entry-point plugin: pytest imports it before any conftest runs and
+# it aborts collection outright when no Qt binding is installed, which no
+# 'collect_ignore_glob' can prevent. It therefore lives in this group of its own rather
+# than in 'test', so a job installing neither binding can still run the rest of the
+# suite; the viewer job requests it next to one of the 'pyqt6' / 'pyside6' extras.
+test-viewer = ['pytest-qt']
 
 [project]
 authors = [
@@ -68,8 +74,6 @@ dependencies = [
   'packaging',
   'pooch',
   'psutil',
-  'pyqtgraph',
-  'qtpy',
   'scipy',
 ]
 description = 'Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.'
@@ -97,6 +101,30 @@ readme = 'README.md'
 requires-python = '>=3.11'
 
 [project.optional-dependencies]
+# 'pyqt6' and 'pyside6' are mutually-exclusive, complete Qt stacks for mne_lsl.viewer:
+# the shared stack + one binding + its Qt-Advanced-Docking-System binding.
+# The Qt-ADS floors are the versions whose layout state (CDockManager.saveState) was
+# verified to be byte-identical across both bindings. Note that 'PySide6-QtAds' pins
+# 'PySide6-Essentials' and 'shiboken6' to an exact Qt version, so it, not the 'PySide6'
+# entry, effectively selects the Qt version of the 'pyside6' extra.
+pyqt6 = [
+  'darkdetect',
+  'PyQt6',
+  'PyQt6Ads>=4.5.0',
+  'pyqtgraph',
+  'qtawesome>=1.1.0',  # 'reset_cache', required to re-color icons on a theme flip
+  'qtpy',
+  'superqt',
+]
+pyside6 = [
+  'darkdetect',
+  'pyqtgraph',
+  'PySide6',
+  'PySide6-QtAds>=5.0.0',
+  'qtawesome>=1.1.0',  # 'reset_cache', required to re-color icons on a theme flip
+  'qtpy',
+  'superqt',
+]
 record = ['pylabrecorder>=0.3.0', 'pyxdf>=1.17.4']
 
 [project.scripts]
@@ -151,7 +179,6 @@ exclude_lines = [
   'if TYPE_CHECKING:',
   'pragma: no cover',
 ]
-omit = ['**/mne_lsl/stream_viewer/*']
 precision = 2
 
 [tool.coverage.run]
@@ -193,7 +220,6 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', '
   'D107',  # 'Missing docstring in __init__'
 ]
 '*.pyi' = ['A002', 'D', 'E501', 'F811']
-'*/stream_viewer/backends/*' = ['D401']
 '__init__.py' = ['F401']
 'examples/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
 'tests/*' = ['D401']
@@ -209,7 +235,6 @@ include-package-data = true
 [tool.setuptools.package-data]
 'mne_lsl.datasets' = ['*registry.txt']
 "mne_lsl.lsl.lib" = ["*"]
-'mne_lsl.stream_viewer.control_gui.settings' = ['*.ini']
 
 [tool.setuptools.packages.find]
 include = ["mne_lsl*"]

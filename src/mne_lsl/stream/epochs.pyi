@@ -328,6 +328,26 @@ class EpochsStream:
         """Connection status of the :class:`~mne_lsl.stream.EpochsStream`.
 
         :type: :class:`bool`
+
+        Notes
+        -----
+        A partially set state reads as not connected, so this property is readable while
+        the acquisition thread is resetting the epochs, e.g. after a lost stream.
+        :meth:`~mne_lsl.stream.EpochsStream.get_data` and the other methods still report
+        a genuinely partial initialization through a clear :class:`RuntimeError`.
+        """
+
+    @property
+    def disconnect_reason(self) -> BaseException | None:
+        """Exception which disconnected the epochs, if any.
+
+        :type: :class:`BaseException` | None
+
+        Notes
+        -----
+        ``None`` while the epochs are connected and after a clean call to
+        :meth:`~mne_lsl.stream.EpochsStream.disconnect`; the exception raised in the
+        acquisition thread when that thread disconnected the epochs.
         """
 
     @property

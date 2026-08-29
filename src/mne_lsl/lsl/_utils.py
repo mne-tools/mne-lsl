@@ -3,7 +3,7 @@ from ctypes import POINTER, c_int, c_void_p, cast
 from .load_liblsl import lib
 
 
-# -- XML tree -----------------------------------------------------------------
+# -- XML tree --------------------------------------------------------------------------
 class XMLElement:
     """A lightweight XML element tree modeling the .desc() field of StreamInfo.
 
@@ -16,7 +16,7 @@ class XMLElement:
         """Construct a new XML element from existing handle."""
         self.e = c_void_p(handle)
 
-    # -- Tree Navigation ------------------------------------------------------
+    # -- Tree Navigation ---------------------------------------------------------------
     def first_child(self):
         """Get the first child of the element."""
         return XMLElement(lib.lsl_first_child(self.e))
@@ -53,7 +53,7 @@ class XMLElement:
         """Get the parent node."""
         return XMLElement(lib.lsl_parent(self.e))
 
-    # -- Content Queries ------------------------------------------------------
+    # -- Content Queries ---------------------------------------------------------------
     def empty(self):
         """True if this node is empty."""  # noqa: D401
         return bool(lib.lsl_empty(self.e))
@@ -85,7 +85,7 @@ class XMLElement:
             res = lib.lsl_child_value_n(self.e, str.encode(name))
         return res.decode("utf-8")
 
-    # -- Modification ---------------------------------------------------------
+    # -- Modification ------------------------------------------------------------------
     def append_child_value(self, name, value):
         """Append a child node with a given name, which has a (nameless) plain-text
         child with the given text value.
@@ -148,7 +148,7 @@ class XMLElement:
             lib.lsl_remove_child_n(self.e, rhs)
 
 
-# -- Exception handling -------------------------------------------------------
+# -- Exception handling ----------------------------------------------------------------
 class LostError(RuntimeError):  # noqa: D101
     pass
 
@@ -182,7 +182,7 @@ def handle_error(errcode):
         raise RuntimeError("An unknown error has occurred.")
 
 
-# -- Memory function ----------------------------------------------------------
+# -- Memory function -------------------------------------------------------------------
 def free_char_p_array_memory(char_p_array):  # noqa: D103
     num_elements = len(char_p_array)
     pointers = cast(char_p_array, POINTER(c_void_p))
@@ -191,7 +191,7 @@ def free_char_p_array_memory(char_p_array):  # noqa: D103
             lib.lsl_destroy_string(pointers[p])
 
 
-# -- Static checker -----------------------------------------------------------
+# -- Static checker --------------------------------------------------------------------
 def check_timeout(timeout: float | None) -> float:
     """Check that the provided timeout is valid.
 

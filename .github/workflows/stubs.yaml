@@ -21,7 +21,9 @@ jobs:
         with:
           activate-environment: true
           python-version: 3.13
-      - run: uv sync -q --locked --no-default-groups --group stubs
+      # 'tools/stubgen.py' imports every module to expand its docstrings, so the Qt stack
+      # must be installed for 'mne_lsl.viewer' to be importable.
+      - run: uv sync -q --locked --no-default-groups --group stubs --extra pyqt6
       - run: mne-lsl sys-info --developer
       - run: python tools/stubgen.py
       - uses: autofix-ci/action@v1.3.4
