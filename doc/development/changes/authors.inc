@@ -1,4 +1,5 @@
 .. _Alin G. Chitu: https://github.com/agchitu
+.. _Anna Sokolova: https://github.com/ZyntZ
 .. _Arnaud Desvachez: https://github.com/dnastars
 .. _Daniel McCloy: https://dan.mccloy.info
 .. _Eric Larson: https://github.com/larsoner

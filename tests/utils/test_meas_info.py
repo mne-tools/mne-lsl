@@ -170,6 +170,19 @@ def test_manufacturer() -> None:
     assert info["device_info"]["model"] == "101"
 
 
+def test_manufacturer_from_sinfo() -> None:
+    """Test reading manufacturer information from a StreamInfo."""
+    ch_names = ["F7", "Fp2", "STI101", "EOG"]
+    ch_types = ["eeg", "eeg", "stim", "eog"]
+    sinfo = StreamInfo("pytest", "eeg", 4, 1024, "float32", uuid.uuid4().hex)
+    sinfo.set_channel_names(ch_names)
+    sinfo.set_channel_types(ch_types)
+    sinfo.desc.append_child_value("manufacturer", "101")
+
+    info = create_info(4, 1024, "eeg", sinfo)
+    assert info["device_info"]["model"] == "101"
+
+
 def test_valid_info_from_sinfo() -> None:
     """Test creation of a valid info from a SreamInfo."""
     sinfo = StreamInfo("pytest", "eeg", 4, 101, "float32", uuid.uuid4().hex)

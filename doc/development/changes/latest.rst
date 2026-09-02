@@ -24,3 +24,4 @@ Version 1.15
 - Restore macOS intel wheels (:pr:`565` by `Eric Larson`_)
 - Add a ``recover`` argument to :meth:`~mne_lsl.stream.StreamLSL.connect` to disable silent recovery of lost streams (:pr:`565` by `Eric Larson`_)
 - Fix an intermittent abort on inlet destruction by not closing the stream before destroying it, which could engage the ``liblsl`` stream recovery machinery whose cancellation races with the destruction (:pr:`565` by `Eric Larson`_)
+- Fix parsing of manufacturer metadata from :class:`~mne_lsl.lsl.StreamInfo` (:pr:`578` by `Anna Sokolova`_)

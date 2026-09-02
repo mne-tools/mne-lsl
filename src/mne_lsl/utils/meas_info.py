@@ -217,8 +217,7 @@ def _read_desc_sinfo(
         ch_units = [_ch_unit_mul_named[0]] * n_channels
     assert len(ch_units) == n_channels
 
-    # TODO: retrieve manufacturer from StreamInfo.desc
-    manufacturer = None
+    manufacturer = desc.desc.child_value("manufacturer") or None
     return ch_names, ch_types, ch_units, manufacturer
 
 
