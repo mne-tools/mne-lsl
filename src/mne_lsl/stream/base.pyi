@@ -9,8 +9,9 @@ import numpy as np
 from _typeshed import Incomplete
 from mne import Info
 from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
+from mne.bem import ConductorModel
 from mne.channels import DigMontage
-from numpy.typing import DTypeLike
+from numpy.typing import ArrayLike, DTypeLike
 from numpy.typing import NDArray as NDArray
 
 from .._typing import ScalarArray as ScalarArray
@@ -809,6 +810,35 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -----
         Read about the :ref:`processing applied to the underlying
         buffer <resources/implementations:StreamLSL>`.
+        """
+
+    def set_head_sphere(
+        self, sphere: float | ArrayLike | ConductorModel | str | list[str] | None = None
+    ) -> BaseStream:
+        """Store the head sphere used to draw topomaps in the measurement info.
+
+        Parameters
+        ----------
+        sphere : float | array-like of float | instance of ConductorModel | str | list of str | None
+            The sphere parameters to use for the head outline. Can be array-like of
+            shape (4,) to give the X/Y/Z origin and radius in meters, or a single float
+            to give just the radius (origin assumed 0, 0, 0). Can also be an instance of
+            a spherical :class:`~mne.bem.ConductorModel`, or one of ``'auto'``,
+            ``'eeglab'``, ``'extra'``, ``'eeg'``, ``'cardinal'``, ``'hpi'`` or a list
+            of the last four to fit the sphere to digitization points. ``None`` uses the
+            head outline already stored in the measurement info, if any, else
+            ``'auto'`` when enough extra digitization points are available and
+            ``(0, 0, 0, 0.095)`` otherwise. See :meth:`mne.io.Raw.set_head_sphere` for
+            details.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
+        Notes
+        -----
+        This method requires MNE-Python 1.14 or above.
         """
 
     def set_meas_date(

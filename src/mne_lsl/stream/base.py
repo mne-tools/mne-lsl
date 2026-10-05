@@ -29,8 +29,9 @@ if TYPE_CHECKING:
     from typing import Any
 
     from mne import Info
+    from mne.bem import ConductorModel
     from mne.channels import DigMontage
-    from numpy.typing import DTypeLike, NDArray
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .._typing import ScalarArray, ScalarIntArray
 
@@ -1116,6 +1117,44 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._buffer[:, self._ref_from] -= data_ref
             with self._info._unlock():
                 self._info["custom_ref_applied"] = FIFF.FIFFV_MNE_CUSTOM_REF_ON
+        return self
+
+    def set_head_sphere(
+        self, sphere: float | ArrayLike | ConductorModel | str | list[str] | None = None
+    ) -> BaseStream:
+        """Store the head sphere used to draw topomaps in the measurement info.
+
+        Parameters
+        ----------
+        sphere : float | array-like of float | instance of ConductorModel | str | list of str | None
+            The sphere parameters to use for the head outline. Can be array-like of
+            shape (4,) to give the X/Y/Z origin and radius in meters, or a single float
+            to give just the radius (origin assumed 0, 0, 0). Can also be an instance of
+            a spherical :class:`~mne.bem.ConductorModel`, or one of ``'auto'``,
+            ``'eeglab'``, ``'extra'``, ``'eeg'``, ``'cardinal'``, ``'hpi'`` or a list
+            of the last four to fit the sphere to digitization points. ``None`` uses the
+            head outline already stored in the measurement info, if any, else
+            ``'auto'`` when enough extra digitization points are available and
+            ``(0, 0, 0, 0.095)`` otherwise. See :meth:`mne.io.Raw.set_head_sphere` for
+            details.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
+        Notes
+        -----
+        This method requires MNE-Python 1.14 or above.
+        """  # noqa: E501
+        if not hasattr(SetChannelsMixin, "set_head_sphere"):
+            raise RuntimeError(
+                f"{type(self).__name__}.set_head_sphere() requires MNE-Python 1.14 or "
+                "above."
+            )
+        self._check_connected("set_head_sphere()")
+        self._check_not_epoched("set_head_sphere()")
+        super().set_head_sphere(sphere)
         return self
 
     def set_meas_date(
