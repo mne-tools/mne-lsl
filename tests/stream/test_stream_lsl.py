@@ -146,10 +146,17 @@ def test_stream(
         montage.ch_names
         == pick_info(stream.info, _picks_to_idx(stream.info, "eeg")).ch_names
     )
+    # head sphere
+    if check_version("mne", "1.14"):
+        stream.set_head_sphere(0.1)
+        assert_allclose(stream.info["head_sphere"], (0, 0, 0, 0.1))
+    else:
+        with pytest.raises(RuntimeError, match="requires MNE-Python 1.14"):
+            stream.set_head_sphere(0.1)
     # dtype
     assert stream.dtype == stream.sinfo.dtype
     # compensation grade
-    assert stream.compensation_grade is None
+    assert stream.compensation_grade in (None, 0)  # 0 from MNE 1.14
     # test hashing and usage as dictionary key
     assert isinstance(hash(stream), int)
     dict_container = {}
@@ -1278,6 +1285,9 @@ def test_stream_get_data_info_invalid() -> None:
         _ = stream.info
     with pytest.raises(RuntimeError, match="Please connect to the stream"):
         stream.get_data()
+    if check_version("mne", "1.14"):
+        with pytest.raises(RuntimeError, match="Please connect to the stream"):
+            stream.set_head_sphere(0.1)
 
 
 def test_stream_lsl_epoched(mock_lsl_stream_sinusoids: DummyPlayer) -> None:
@@ -1306,6 +1316,11 @@ def test_stream_lsl_epoched(mock_lsl_stream_sinusoids: DummyPlayer) -> None:
         stream.add_reference_channels("CPz")
     with pytest.raises(RuntimeError, match="can not be used on a stream being epoched"):
         stream.set_eeg_reference("average")
+    if check_version("mne", "1.14"):
+        with pytest.raises(
+            RuntimeError, match="can not be used on a stream being epoched"
+        ):
+            stream.set_head_sphere(0.1)
     stream._epochs = []
 
 
