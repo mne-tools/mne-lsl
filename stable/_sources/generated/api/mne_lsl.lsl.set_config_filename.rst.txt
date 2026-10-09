@@ -1,0 +1,9 @@
+﻿mne\_lsl.lsl.set\_config\_filename
+==================================
+
+.. currentmodule:: mne_lsl.lsl
+
+.. autofunction:: set_config_filename
+
+.. minigallery:: mne_lsl.lsl.set_config_filename
+    :add-heading:
