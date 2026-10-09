@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/logos/logo-mne-dark.svg">
+  <img src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/logos/logo-mne-light.svg" alt="MNE-LSL" width="400"/>
+</picture>
+
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
@@ -9,8 +14,6 @@
 [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
 [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.08088/status.svg)](https://doi.org/10.21105/joss.08088)
-
-<img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/logos/logo-mne-hex.svg" alt="logo" width="200"/>
 
 **MNE-LSL** [(Documentation website)](https://mne.tools/mne-lsl)
 provides a real-time brain signal streaming framework.
