@@ -1,11 +1,11 @@
 repos:
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.12.13
+      rev: 0.13.0
       hooks:
           - id: uv-lock
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.16.7
+      rev: v0.17.0
       hooks:
           - id: ruff
             name: ruff linter
@@ -20,7 +20,7 @@ repos:
             additional_dependencies: [tomli]
 
     - repo: https://github.com/mscheltienne/bibclean
-      rev: 0.8.0
+      rev: 1.0.0
       hooks:
           - id: bibclean-fix
             files: doc/references.bib
