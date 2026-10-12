@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -111,29 +111,15 @@ wheels = [
 
 [[package]]
 name = "bibclean"
-version = "0.8.0"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "bibtexparser" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "packaging" },
-    { name = "psutil" },
-    { name = "toml" },
+    { name = "click" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4a/f7/4ddcf2cbb073a6aaac86d6227cc5e4ba85d92c738ba76bd6dc6238b44385/bibclean-0.8.0.tar.gz", hash = "sha256:96f983a661a9773e299bbbca4e2e858354e736528bbe3f46cb87b1d159acfa5f", size = 17474, upload-time = "2023-11-07T12:38:54.447Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d7/25/d321e8c504ca9736723de9af95149b2e3eb562c2dce7b5990ec4c0a16510/bibclean-1.0.0.tar.gz", hash = "sha256:a188bfabb726a86c9ab6922db5c81918deb8ec5e0533d6ff03c225d1fbc168e0", size = 252930, upload-time = "2026-10-12T14:28:48.255Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ae/68/afba1f542e8bb86044b58feeb78f0360c63c11ef77709f0028aaee4a9eb8/bibclean-0.8.0-py3-none-any.whl", hash = "sha256:9f5e814aa90437fcfb196b54ffa336ffab20aef94cc5e20f428b4a3e6aaa08e1", size = 21610, upload-time = "2023-11-07T12:38:51.954Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/37/b1631e00e21d754effebf2b947a3fa16b2129aef85839d70957864577f9c/bibclean-1.0.0-py3-none-any.whl", hash = "sha256:8cab8a91ca5eb8ccbcb4ef0e230d01a4f20ffb20b8c1e90adc27bdd0808b0332", size = 43790, upload-time = "2026-10-12T14:28:47.073Z" },
 ]
-
-[[package]]
-name = "bibtexparser"
-version = "1.4.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pyparsing" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/82/60/e4315ce9801daa4c95d4ae66cc684a1780cc041ba3c4eab67265ab08a038/bibtexparser-1.4.0.tar.gz", hash = "sha256:ca7ce2bc34e7c48a678dd49416429bb567441f26dbb13b3609082d8cd109ace6", size = 51883, upload-time = "2022-09-23T12:42:39.173Z" }
 
 [[package]]
 name = "certifi"
@@ -1247,6 +1233,7 @@ wheels = [
 [[package]]
 name = "mne-lsl"
 source = { editable = "." }
+default-groups = "all"
 dependencies = [
     { name = "click" },
     { name = "mne" },
@@ -1352,7 +1339,7 @@ stubs = [
     { name = "ruff", specifier = ">=0.6.0" },
 ]
 style = [
-    { name = "bibclean" },
+    { name = "bibclean", specifier = ">=1.0" },
     { name = "codespell", extras = ["toml"], specifier = ">=2.2.4" },
     { name = "pre-commit" },
     { name = "ruff", specifier = ">=0.6.0" },
@@ -2651,15 +2638,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b7/4d/08c89e34946fce2aec4fbb45c9016efd5f4d7f24af8e5d93296e935631d8/threadpoolctl-3.6.0.tar.gz", hash = "sha256:8ab8b4aa3491d812b623328249fab5302a68d2d71745c8a4c719a2fcaba9f44e", size = 21274, upload-time = "2025-03-13T13:49:23.031Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/32/d5/f9a850d79b0851d1d4ef6456097579a9005b31fea68726a4ae5f2d82ddd9/threadpoolctl-3.6.0-py3-none-any.whl", hash = "sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb", size = 18638, upload-time = "2025-03-13T13:49:21.846Z" },
-]
-
-[[package]]
-name = "toml"
-version = "0.10.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/be/ba/1f744cdc819428fc6b5084ec34d9b30660f6f9daaf70eead706e3203ec3c/toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f", size = 22253, upload-time = "2020-11-01T01:40:22.204Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/44/6f/7120676b6d73228c96e17f1f794d8ab046fc910d781c8d151120c3f1569e/toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b", size = 16588, upload-time = "2020-11-01T01:40:20.672Z" },
 ]
 
 [[package]]
