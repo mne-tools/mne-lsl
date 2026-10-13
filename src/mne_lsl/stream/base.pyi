@@ -828,8 +828,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             of the last four to fit the sphere to digitization points. ``None`` uses the
             head outline already stored in the measurement info, if any, else
             ``'auto'`` when enough extra digitization points are available and
-            ``(0, 0, 0, 0.095)`` otherwise. See :meth:`mne.io.Raw.set_head_sphere` for
-            details.
+            ``(0, 0, 0, 0.095)`` otherwise. See :meth:`!mne.io.Raw.set_head_sphere`
+            for details.
 
         Returns
         -------
