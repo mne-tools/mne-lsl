@@ -29,7 +29,7 @@ jobs:
     needs: get_commit_message
     name: build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:

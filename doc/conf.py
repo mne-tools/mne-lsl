@@ -92,7 +92,6 @@ html_css_files = [
     "css/style.css",
 ]
 html_favicon = "_static/logos/logo-no-mne.svg"
-html_logo = "_static/logos/logo-mne-hex.svg"
 html_permalinks_icon = "🔗"
 html_show_sphinx = False
 html_static_path = ["_static"]
@@ -114,6 +113,8 @@ html_theme_options = {
             "class": "",
         },
     ],
+    "dark_logo": "logos/logo-mne-dark.svg",
+    "light_logo": "logos/logo-mne-light.svg",
     "sidebar_hide_name": True,
 }
 
