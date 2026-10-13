@@ -24,7 +24,7 @@ ide = [
 ]
 stubs = ['mypy', 'ruff>=0.6.0']
 style = [
-  'bibclean',
+  'bibclean>=1.0',
   'codespell[toml]>=2.2.4',
   'pre-commit',
   'ruff>=0.6.0',
