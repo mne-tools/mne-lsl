@@ -6,18 +6,17 @@ from typing import TYPE_CHECKING
 import numpy as np
 from mne import Info, Projection
 from mne._fiff._digitization import DigPoint
-from mne._fiff.constants import (
-    FIFF,
-    _ch_coil_type_named,
-    _ch_kind_named,
-    _coord_frame_named,
-    _dig_cardinal_named,
-    _dig_kind_named,
-)
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils.logs import warn
-from ..utils.meas_info import create_info
+from ..utils.meas_info import (
+    _LOC_NAMES,
+    _MAPPING_LSL,
+    _read_channel_field,
+    _read_digitization,
+    _read_projectors,
+    create_info,
+)
 from ._utils import XMLElement
 from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
 from .load_liblsl import lib
@@ -28,21 +27,6 @@ if TYPE_CHECKING:
     from numpy.typing import DTypeLike
 
     from .._typing import ScalarIntArray
-
-
-_MAPPING_LSL = {
-    "ch_name": "label",
-    "ch_type": "type",
-    "ch_unit": "unit",
-}
-# fmt: off
-_LOC_NAMES = (
-    "R0x", "R0y", "R0z",
-    "Exx", "Exy", "Exz",
-    "Eyx", "Eyy", "Eyz",
-    "Ezx", "Ezy", "Ezz",
-)
-# fmt: on
 
 
 class _BaseStreamInfo:
@@ -310,88 +294,7 @@ class _BaseStreamInfo:
         info : Info
             :class:`~mne.Info` containing the measurement information.
         """
-        info = create_info(self.n_channels, self.sfreq, self.stype, self)
-        # complete the info object with additional information present from the FIFF
-        # standard format.
-        kinds = self._get_channel_info("kind")
-        coil_types = self._get_channel_info("coil_type")
-        coord_frames = self._get_channel_info("coord_frame")
-        range_cals = self._get_channel_info("range_cal")
-
-        locs = list()
-        channels = self.desc.child("channels")
-        ch = channels.child("channel")
-        while not ch.empty():
-            loc_array = list()
-            loc = ch.child("loc")
-            for loc_name in _LOC_NAMES:
-                try:
-                    value = float(loc.child(loc_name).first_child().value())
-                except ValueError:
-                    value = np.nan
-                loc_array.append(value)
-            locs.append(loc_array)
-            ch = ch.next_sibling()
-        locs = (
-            np.array([[np.nan] * 12] * self.n_channels)
-            if len(locs) == 0
-            else np.array(locs)
-        )
-
-        with info._unlock(update_redundant=True):
-            for var, name, fiff_named in (
-                (kinds, "kind", _ch_kind_named),
-                (coil_types, "coil_type", _ch_coil_type_named),
-                (coord_frames, "coord_frame", _coord_frame_named),
-            ):
-                if var is None:
-                    continue
-                for k, value in enumerate(var):
-                    value = _BaseStreamInfo._get_fiff_int_named(value, name, fiff_named)
-                    if value is not None:
-                        info["chs"][k][name] = value
-
-            if range_cals is not None:
-                for k, range_cal in enumerate(range_cals):
-                    if range_cal is not None:
-                        try:
-                            info["chs"][k]["range"] = 1.0
-                            info["chs"][k]["cal"] = float(range_cal)
-                        except ValueError:
-                            warn(
-                                f"Could not cast 'range_cal' factor {range_cal} to "
-                                "float.",
-                            )
-            for k, loc in enumerate(locs):
-                info["chs"][k]["loc"] = loc
-
-        # filters
-        filters = self.desc.child("filters")
-        if not filters.empty() and self.sfreq != 0:
-            highpass = filters.child("highpass").first_child().value()
-            lowpass = filters.child("lowpass").first_child().value()
-            with info._unlock():
-                for name, value in zip(
-                    ("highpass", "lowpass"), (highpass, lowpass), strict=True
-                ):
-                    if len(value) != 0:
-                        try:
-                            info[name] = float(value)
-                        except ValueError:
-                            warn(f"Could not cast '{name}' {value} to float.")
-        elif not filters.empty() and self.sfreq == 0:
-            warn(
-                "Node 'filters' found in the description of an irregularly sampled "
-                "stream. This is inconsistent and will be skipped."
-            )
-
-        projs = self._get_channel_projectors()
-        dig = self._get_digitization()
-        with info._unlock(update_redundant=True, check_after=True):
-            info["projs"] = projs
-            if len(dig) != 0:
-                info["dig"] = dig
-        return info
+        return create_info(self.n_channels, self.sfreq, self.stype, self)
 
     def get_channel_names(self) -> list[str] | None:
         """Get the channel names in the description.
@@ -449,24 +352,8 @@ class _BaseStreamInfo:
 
     def _get_channel_info(self, name: str) -> list[str] | None:
         """Get the 'channel/name' element in the XML tree."""
-        channels = self.desc.child("channels")
-        if channels.empty():
-            return None
-        name = _MAPPING_LSL.get(name, name)
-
-        ch_infos = list()
-        ch = channels.child("channel")
-        while not ch.empty():
-            ch_info = ch.child(name).first_child().value()
-            if len(ch_info) != 0:
-                ch_infos.append(ch_info)
-            else:
-                ch_infos.append(None)
-            ch = ch.next_sibling()
-
-        if all(ch_info is None for ch_info in ch_infos):
-            return None
-        if len(ch_infos) != self.n_channels:
+        ch_infos = _read_channel_field(self.desc, name)
+        if ch_infos is not None and len(ch_infos) != self.n_channels:
             warn(
                 f"The stream description contains {len(ch_infos)} elements for "
                 f"{self.n_channels} channels."
@@ -475,105 +362,11 @@ class _BaseStreamInfo:
 
     def _get_channel_projectors(self) -> list[Projection]:
         """Get the SSP vectors in the XML tree."""
-        projs = list()
-        projectors = self.desc.child("projectors")
-        projector = projectors.child("projector")
-        while not projector.empty():
-            desc = projector.child("desc").first_child().value()
-            if len(desc) == 0:
-                warn("An SSP projector without description was found. Skipping.")
-                projector = projector.next_sibling()
-                continue
-            kind = projector.child("kind").first_child().value()
-            try:
-                kind = int(kind)
-            except ValueError:
-                warn(f"Could not cast the SSP kind {kind} to integer.")
-                projector = projector.next_sibling()
-                continue
-
-            ch_names = list()
-            ch_datas = list()
-            data = projector.child("data")
-            ch = data.child("channel")
-            while not ch.empty():
-                ch_name = ch.child("label").first_child().value()
-                if len(ch_name) == 0:
-                    warn(
-                        "SSP projector has an empty-channel label. The channel will "
-                        "be skipped."
-                    )
-                    ch.next_sibling()
-                    continue
-                ch_data = ch.child("data").first_child().value()
-                try:
-                    ch_data = float(ch_data)
-                except ValueError:
-                    warn(
-                        f"Could not cast the SSP value {ch_data} for channel {ch_name} "
-                        "to float.",
-                    )
-                    ch.next_sibling()
-                    continue
-                ch_names.append(ch_name)
-                ch_datas.append(ch_data)
-                ch = ch.next_sibling()
-
-            assert len(ch_names) == len(ch_datas)  # sanity-check
-            proj_data = {
-                "nrow": 1,
-                "ncol": len(ch_names),
-                "row_names": None,
-                "col_names": ch_names,
-                "data": np.array(ch_datas).reshape(1, -1),
-            }
-            projs.append(Projection(data=proj_data, desc=desc, kind=kind))
-            projector = projector.next_sibling()
-        return projs
+        return _read_projectors(self.desc)
 
     def _get_digitization(self) -> list[DigPoint]:
         """Get the digitization in the XML tree."""
-        dig = self.desc.child("dig")
-        dig_points = list()
-        point = dig.child("point")
-        while not point.empty():
-            kind = point.child("kind").first_child().value()
-            kind = _BaseStreamInfo._get_fiff_int_named(
-                kind, "dig_kind", _dig_kind_named
-            )
-            if kind is None:
-                point = point.next_sibling()
-                continue
-            ident = point.child("ident").first_child().value()
-            if kind == FIFF.FIFFV_POINT_CARDINAL:
-                ident = _BaseStreamInfo._get_fiff_int_named(
-                    ident,
-                    "dig_ident",
-                    _dig_cardinal_named,
-                )
-            else:
-                try:
-                    ident = int(ident)
-                except ValueError:
-                    warn(f"Could not cast 'ident' {ident} to integer.")
-                    point = point.next_sibling()
-                    continue
-            loc = point.child("loc")
-            r = [loc.child(pos).first_child().value() for pos in ("X", "Y", "Z")]
-            if ident is None or any(len(elt) == 0 for elt in r):
-                point = point.next_sibling()
-                continue
-            try:
-                r = np.array([float(elt) for elt in r], dtype=np.float32)
-            except ValueError:
-                warn(f"Could not cast dig point location {r} to float.")
-                point = point.next_sibling()
-                continue
-            dig_points.append(
-                DigPoint(kind=kind, ident=ident, r=r, coord_frame=FIFF.FIFFV_COORD_HEAD)
-            )
-            point = point.next_sibling()
-        return dig_points
+        return _read_digitization(self.desc)
 
     def set_channel_info(self, info: Info) -> None:
         """Set the channel info from a FIFF measurement :class:`~mne.Info`.
@@ -812,29 +605,6 @@ class _BaseStreamInfo:
                 node.append_child_value(key, value)
             else:
                 node.child(key).first_child().set_value(value)
-
-    # -- Helper methods to retrieve FIFF elements in the XMLElement tree ---------------
-    @staticmethod
-    def _get_fiff_int_named(
-        value: str | None,
-        name: str,
-        mapping: dict[int, int],
-    ) -> int | None:
-        """Try to retrieve the FIFF integer code from the str representation."""
-        if value is None:
-            return None
-        try:
-            idx = int(value)
-            value = mapping[idx]
-            return value
-        except ValueError:
-            warn(f"Could not cast '{name}' {value} to integer.")
-        except KeyError:
-            warn(
-                f"Could not convert '{name}' {int(value)} to a known FIFF "
-                "code: {tuple(mapping.keys())}.",
-            )
-        return None
 
 
 class StreamInfo(_BaseStreamInfo):

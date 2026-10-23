@@ -10,6 +10,11 @@ from ..utils._checks import check_type as check_type
 from ..utils._checks import check_value as check_value
 from ..utils._checks import ensure_int as ensure_int
 from ..utils.logs import warn as warn
+from ..utils.meas_info import _LOC_NAMES as _LOC_NAMES
+from ..utils.meas_info import _MAPPING_LSL as _MAPPING_LSL
+from ..utils.meas_info import _read_channel_field as _read_channel_field
+from ..utils.meas_info import _read_digitization as _read_digitization
+from ..utils.meas_info import _read_projectors as _read_projectors
 from ..utils.meas_info import create_info as create_info
 from ._utils import XMLElement as XMLElement
 from .constants import fmt2idx as fmt2idx
@@ -18,9 +23,6 @@ from .constants import idx2fmt as idx2fmt
 from .constants import numpy2fmt as numpy2fmt
 from .constants import string2fmt as string2fmt
 from .load_liblsl import lib as lib
-
-_MAPPING_LSL: Incomplete
-_LOC_NAMES: Incomplete
 
 class _BaseStreamInfo:
     """Base Stream information object, storing the declaration of a stream.
@@ -352,12 +354,6 @@ class _BaseStreamInfo:
     @staticmethod
     def _set_description_node(node: XMLElement, mapping: dict[str, Any]) -> None:
         """Set the key: value child(s) of a node."""
-
-    @staticmethod
-    def _get_fiff_int_named(
-        value: str | None, name: str, mapping: dict[int, int]
-    ) -> int | None:
-        """Try to retrieve the FIFF integer code from the str representation."""
 
 class StreamInfo(_BaseStreamInfo):
     """Base Stream information object, storing the declaration of a stream.
