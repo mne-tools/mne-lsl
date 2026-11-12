@@ -34,6 +34,20 @@ MNE-LSL supports `python ≥ 3.11` and is available on
 Install instruction can be found on the
 [documentation website](https://mne.tools/mne-lsl/stable/resources/install.html).
 
+# Citing
+
+If you use **MNE-LSL**, please cite our paper in the
+[Journal of Open Source Software](https://doi.org/10.21105/joss.08088):
+
+> Scheltienne, M., Larson, E., Desvachez, A., & Lee, K. (2025). MNE-LSL: Real-time
+> framework integrated with MNE-Python for online neuroscience research through
+> LSL-compatible devices. Journal of Open Source Software, 10(111), 8088.
+> https://doi.org/10.21105/joss.08088
+
+A BibTeX entry is available on the
+[documentation website](https://mne.tools/mne-lsl) and in `CITATION.cff`
+(GitHub's "Cite this repository" button).
+
 # Acknowledgment
 
 <img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/partners/FCBG.svg" width=100>

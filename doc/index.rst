@@ -70,7 +70,7 @@ If you use ``MNE-LSL``, please consider citing our paper\ :footcite:p:`mne-lsl_2
 
         .. code-block::
 
-            Scheltienne, M., Larson, E., Desvachez, A., & Lee, K. (2025). MNE-LSL: Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.. Journal of Open Source Software, 10(111), 8088. https://doi.org/10.21105/joss.08088
+            Scheltienne, M., Larson, E., Desvachez, A., & Lee, K. (2025). MNE-LSL: Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices. Journal of Open Source Software, 10(111), 8088. https://doi.org/10.21105/joss.08088
 
     .. tab-item:: BibTeX
 
