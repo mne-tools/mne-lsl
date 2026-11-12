@@ -26,3 +26,4 @@ Version 1.15
 - Fix an intermittent abort on inlet destruction by not closing the stream before destroying it, which could engage the ``liblsl`` stream recovery machinery whose cancellation races with the destruction (:pr:`565` by `Eric Larson`_)
 - Fix parsing of manufacturer metadata from :class:`~mne_lsl.lsl.StreamInfo` (:pr:`578` by `Anna Sokolova`_)
 - Add :meth:`~mne_lsl.stream.StreamLSL.set_head_sphere` to store the head sphere in the measurement info, requires MNE-Python 1.14 or above (:pr:`585` by `Mathieu Scheltienne`_)
+- Recover channel locations, FIFF codes, filters, SSP projectors and digitization from an XDF stream description, identically to a :class:`~mne_lsl.lsl.StreamInfo` (:pr:`595` by `Mathieu Scheltienne`_)
