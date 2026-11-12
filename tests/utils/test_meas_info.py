@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 import uuid
+from xml.etree import ElementTree
 
+import numpy as np
 import pytest
+from mne import create_info as mne_create_info
+from mne._fiff.constants import FIFF
+from mne.channels import make_dig_montage
 
 from mne_lsl.lsl import StreamInfo
 from mne_lsl.utils.logs import _use_log_level
@@ -252,3 +257,87 @@ def test_without_description(caplog: pytest.LogCaptureFixture) -> None:
     assert info.ch_names == ["0", "1"]
     assert info.get_channel_types() == ["eeg", "eeg"]
     assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0]
+
+
+def _xml_to_dict(elem):
+    """Convert an XML element to the nested dict representation used by pyxdf.
+
+    Each element maps every child tag to the list of that tag's occurrences; a leaf is
+    represented by its text content. This mirrors how ``pyxdf.load_xdf`` returns a
+    stream description, so the dict path can be exercised from the same source as the
+    StreamInfo path.
+    """
+    children = list(elem)
+    if not children:
+        return elem.text or ""
+    out: dict = dict()
+    for child in children:
+        out.setdefault(child.tag, list()).append(_xml_to_dict(child))
+    return out
+
+
+def test_dig_and_locations_parity() -> None:
+    """The dig, locations and filters are read identically from a sinfo and a dict.
+
+    A description holding digitization points, channel locations and filters (as
+    produced by ``neuromag2lsl``) must yield the same :class:`~mne.Info` whether it is
+    read from a live :class:`~mne_lsl.lsl.StreamInfo` or from the dictionary returned
+    when loading an XDF file.
+    """
+    ch_names = ["Fz", "Cz", "Pz", "Oz"]
+    info_ref = mne_create_info(ch_names, 1000.0, "eeg")
+    montage = make_dig_montage(
+        nasion=[0.0, 0.1, 0.0],
+        lpa=[-0.08, 0.0, 0.0],
+        rpa=[0.08, 0.0, 0.0],
+        hsp=[[0.01, 0.11, 0.02], [-0.01, 0.11, 0.02]],
+        ch_pos={
+            "Fz": [0.0, 0.07, 0.07],
+            "Cz": [0.0, 0.0, 0.1],
+            "Pz": [0.0, -0.07, 0.07],
+            "Oz": [0.0, -0.1, 0.03],
+        },
+        coord_frame="head",
+    )
+    info_ref.set_montage(montage)
+    with info_ref._unlock():
+        info_ref["highpass"] = 0.5
+        info_ref["lowpass"] = 120.0
+
+    # push the reference info into a StreamInfo description, then read it back (sinfo
+    # path) and from the equivalent dict (XDF path)
+    sinfo = StreamInfo(
+        "pytest", "eeg", len(ch_names), 1000.0, "float32", uuid.uuid4().hex
+    )
+    sinfo.set_channel_info(info_ref)
+    info_sinfo = sinfo.get_channel_info()
+
+    desc = ElementTree.fromstring(sinfo.as_xml).find("desc")
+    info_dict = create_info(len(ch_names), 1000.0, "eeg", _xml_to_dict(desc))
+
+    # both paths must recover the digitization, identical to the reference
+    for info in (info_sinfo, info_dict):
+        assert info["dig"] is not None
+        assert len(info["dig"]) == len(info_ref["dig"])
+        for point, ref in zip(info["dig"], info_ref["dig"], strict=True):
+            assert int(point["kind"]) == int(ref["kind"])
+            assert int(point["ident"]) == int(ref["ident"])
+            assert point["coord_frame"] == FIFF.FIFFV_COORD_HEAD
+            assert np.allclose(point["r"], ref["r"], atol=1e-6)
+
+    # the two paths must agree with each other on dig, location, kind and filters
+    assert len(info_sinfo["dig"]) == len(info_dict["dig"])
+    for point_sinfo, point_dict in zip(
+        info_sinfo["dig"], info_dict["dig"], strict=True
+    ):
+        assert int(point_sinfo["kind"]) == int(point_dict["kind"])
+        assert int(point_sinfo["ident"]) == int(point_dict["ident"])
+        assert np.allclose(point_sinfo["r"], point_dict["r"], atol=1e-6)
+    for ch_sinfo, ch_dict, ch_ref in zip(
+        info_sinfo["chs"], info_dict["chs"], info_ref["chs"], strict=True
+    ):
+        assert np.allclose(ch_sinfo["loc"], ch_dict["loc"], atol=1e-6, equal_nan=True)
+        assert np.allclose(ch_sinfo["loc"], ch_ref["loc"], atol=1e-6, equal_nan=True)
+        assert int(ch_sinfo["kind"]) == int(ch_dict["kind"]) == int(ch_ref["kind"])
+    for key in ("highpass", "lowpass"):
+        assert info_sinfo[key] == info_dict[key] == info_ref[key]
