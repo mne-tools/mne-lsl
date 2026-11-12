@@ -4,6 +4,7 @@ Changelog
 .. toctree::
     :titlesonly:
 
+    latest.rst
     1.15.rst
     1.14.rst
     1.13.rst
