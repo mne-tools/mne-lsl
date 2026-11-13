@@ -2,11 +2,11 @@ import os
 import platform
 import shutil
 import subprocess
-import sysconfig
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from setuptools import setup
+from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.develop import develop as _develop
 from setuptools.dist import Distribution
@@ -21,6 +21,18 @@ _PATTERNS: dict[str, str] = {
 class BinaryDistribution(Distribution):  # noqa: D101
     def has_ext_modules(self):  # noqa: D102
         return True
+
+
+class bdist_wheel(_bdist_wheel):  # noqa: D101
+    def get_tag(self):
+        """Tag the wheel as compatible with any Python 3 interpreter on this platform.
+
+        liblsl is loaded with ctypes: the wheel ships no CPython extension, thus it does
+        not depend on the interpreter ABI and installs on every CPython version,
+        including free-threaded builds.
+        """
+        _, _, plat = super().get_tag()
+        return "py3", "none", plat
 
 
 class build_ext(_build_ext):  # noqa: D101
@@ -112,16 +124,11 @@ class develop(_develop):  # noqa: D101
         super().run()
 
 
-options = dict()
-is_freethreaded = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
-if not is_freethreaded:
-    options["bdist_wheel"] = {"py_limited_api": "cp311"}
-
 setup(
     cmdclass={
+        "bdist_wheel": bdist_wheel,
         "build_ext": build_ext,
         "develop": develop,
     },
-    options=options,
     distclass=BinaryDistribution,
 )
