@@ -138,7 +138,7 @@ def test_stream(
     # montage
     montage_name = "colin27_1020" if check_version("mne", "1.13") else "standard_1020"
     stream.set_montage(montage_name)
-    stream.plot_sensors()
+    stream.plot_sensors(show=False)
     plt.close("all")
     montage = stream.get_montage()
     assert isinstance(montage, DigMontage)
