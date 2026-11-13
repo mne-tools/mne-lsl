@@ -74,7 +74,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             True
             >>> 'seeg' in inst  # doctest: +SKIP
             False
-
         """
 
     def __del__(self) -> None:

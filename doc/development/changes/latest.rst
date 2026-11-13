@@ -19,4 +19,4 @@
 Version 1.16.0
 ==============
 
-- xxx
+- Build a single ``py3-none`` wheel per platform, compatible with every CPython version ``>=3.11``, including free-threaded builds, and test on Python ``3.15`` and ``3.15t`` (:pr:`609` by `Mathieu Scheltienne`_)
